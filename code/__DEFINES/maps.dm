@@ -256,3 +256,21 @@ Always compile, always use that verb, and always make sure that it works for wha
 #define MINETYPE_NONE "none"
 #define MINETYPE_LAVALAND "lavaland"
 #define MINETYPE_ICE "ice"
+
+// Virtual z-level allocation types
+/// Free allocation - places virtual levels anywhere there's free space
+#define ALLOCATION_FREE "free"
+/// Quadrant allocation - divides physical z-levels into 4 quadrants
+#define ALLOCATION_QUADRANT "quadrant"
+/// Octant allocation - divides physical z-levels into 8 sections
+#define ALLOCATION_OCTODRANT "octodrant"
+
+// Virtual z-level allocation sizes
+/// Default allocation jump size
+#define DEFAULT_ALLOC_JUMP 50
+/// Size of quadrant maps (255x255 typically)
+#define QUADRANT_MAP_SIZE 255
+/// Border size for quadrant maps
+#define QUADRANT_SIZE_BORDER 10
+/// Size of octodrant maps
+#define OCTODRANT_MAP_SIZE 127

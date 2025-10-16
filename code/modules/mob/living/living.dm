@@ -1953,6 +1953,26 @@ GLOBAL_LIST_EMPTY(fire_appearances)
 	..()
 	update_z(new_turf?.z)
 
+/**
+ * Updates virtual z-level tracking for living mobs
+ * Handles players_by_virtual_z list maintenance
+ *
+ * * new_virtual_z - The new virtual z ID (or null to unregister)
+ * * old_virtual_z - The old virtual z ID
+ */
+/mob/living/on_virtual_z_change(new_virtual_z, old_virtual_z)
+	. = ..()
+	if(!client)
+		return
+
+	// Remove from old virtual z tracking
+	if(old_virtual_z)
+		LAZYREMOVE(SSmobs.players_by_virtual_z["[old_virtual_z]"], src)
+
+	// Add to new virtual z tracking
+	if(new_virtual_z)
+		LAZYADD(SSmobs.players_by_virtual_z["[new_virtual_z]"], src)
+
 /mob/living/mouse_drop_receive(atom/dropping, atom/user, params)
 	var/mob/living/U = user
 	if(isliving(dropping))

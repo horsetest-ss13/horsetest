@@ -665,9 +665,11 @@
 /obj/effect/landmark/mining_center/Initialize(mapload)
 	..()
 
+	var/turf/src_turf = get_turf(src)
 	for(var/obj/mining_mark as anything in GLOB.mining_center)
-		if(src.z == mining_mark.z)
-			CRASH("\The [src] spawned on Z level [z] already exists! Maps should only have at most one mining epicenter for normal ore generation.")
+		var/turf/mark_turf = get_turf(mining_mark)
+		if(src_turf.virtual_z == mark_turf.virtual_z)
+			CRASH("\The [src] spawned on virtual level [src_turf.virtual_z] already exists! Maps should only have at most one mining epicenter for normal ore generation.")
 
 	GLOB.mining_center += loc
 	return INITIALIZE_HINT_QDEL
