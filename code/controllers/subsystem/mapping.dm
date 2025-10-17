@@ -1001,6 +1001,9 @@ ADMIN_VERB(load_away_mission, R_FUN, "Load Away Mission", "Load a specific away 
 		for(var/datum/space_level/iterated_level as anything in levels_to_check)
 			if(iterated_level.allocation_type != allocation_type)
 				continue
+			// Don't allow virtual level allocation on protected z-levels (CentCom, Station, Away missions)
+			if(iterated_level.traits[ZTRAIT_CENTCOM] || iterated_level.traits[ZTRAIT_STATION] || iterated_level.traits[ZTRAIT_AWAY])
+				continue
 			allocation_list = find_allocation_in_level(iterated_level, size_x, size_y, allocation_jump)
 			if(allocation_list)
 				return allocation_list
