@@ -111,7 +111,6 @@ GLOBAL_VAR_INIT(hhSharedMapZone, null)
 				storageTemp.width + 2,
 				storageTemp.height + 2,
 				ALLOCATION_FREE,
-				10
 			)
 			storage_vlevel.reserve_margin(1)
 			var/turf/storage_turf = locate(storage_vlevel.low_x + storage_vlevel.reserved_margin, storage_vlevel.low_y + storage_vlevel.reserved_margin, storage_vlevel.z_value)
@@ -150,7 +149,6 @@ GLOBAL_VAR_INIT(hhSharedMapZone, null)
 			hotelRoomTemp.width + 2,
 			hotelRoomTemp.height + 2,
 			ALLOCATION_FREE,
-			20 // Smaller jump
 		)
 		roomVLevel.reserve_margin(1)
 		var/turf/room_turf = locate(roomVLevel.low_x + roomVLevel.reserved_margin, roomVLevel.low_y + roomVLevel.reserved_margin, roomVLevel.z_value)
@@ -194,7 +192,6 @@ GLOBAL_VAR_INIT(hhSharedMapZone, null)
 		hotelRoomTemp.width + 2,
 		hotelRoomTemp.height + 2,
 		ALLOCATION_FREE,
-		20 // Smaller jump for tighter packing (rooms are ~16x15)
 	)
 	roomVLevel.reserve_margin(1)
 	var/turf/bottom_left = locate(roomVLevel.low_x + roomVLevel.reserved_margin, roomVLevel.low_y + roomVLevel.reserved_margin, roomVLevel.z_value)

@@ -267,10 +267,10 @@ Always compile, always use that verb, and always make sure that it works for wha
 
 // Virtual z-level allocation sizes
 /// Default allocation jump size
-#define DEFAULT_ALLOC_JUMP 50
-/// Size of quadrant maps (255x255 typically)
-#define QUADRANT_MAP_SIZE 255
+#define DEFAULT_ALLOC_JUMP 5
+/// Size of quadrant splitting
+#define QUADRANT_MAP_SIZE 127
 /// Border size for quadrant maps
 #define QUADRANT_SIZE_BORDER 10
 /// Size of octodrant maps
-#define OCTODRANT_MAP_SIZE 127
+#define OCTODRANT_MAP_SIZE 63
