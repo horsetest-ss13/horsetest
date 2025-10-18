@@ -39,9 +39,9 @@ export class SupercruiseMapSvg extends Component {
         velocity_y: obj.velocity_y,
         radius: obj.radius,
         render_mode: obj.render_mode,
-        created_at: obj.created_at,
         position_history: obj.position_history,
         docking_range: obj.docking_range,
+        supercruise_color: obj.supercruise_color,  // Make sure to copy the color!
       };
     });
 
@@ -162,11 +162,11 @@ export class SupercruiseMapSvg extends Component {
             (obj.position_y + (obj.render_mode !== 'station' && obj.render_mode !== 'planet' ? obj.velocity_y * elapsed : 0) + yOffset) * zoomScale;
           const r = obj.radius * zoomScale;
 
-          // Color based on type
-          const color =
-            obj.render_mode === 'shuttle' ? '#a4eea4' :
+          // Color based on object's supercruise_color property, with fallbacks
+          const color = obj.supercruise_color ||
+            (obj.render_mode === 'shuttle' ? '#a4eea4' :
             obj.render_mode === 'station' ? '#4488ff' :
-            obj.render_mode === 'planet' ? (obj.planet_color || '#888888') : '#ffaa00';
+            obj.render_mode === 'planet' ? '#8B7355' : '#ffaa00');
 
           // Calculate if this is our shuttle
           const isOurShuttle = ourObject && obj.id === ourObject.id;

@@ -29,17 +29,8 @@ SUBSYSTEM_DEF(supercruise)
 /**
  * Generate a solar system with various planets
  */
-datum/controller/subsystem/supercruise/proc/generate_planets(var/num_planets)
-	var/list/planet_types = list("rocky", "ice", "gas", "lava", "oceanic", "desert", "forest")
-	var/list/planet_names = list(
-		"rocky" = list("Ceres", "Vesta", "Pallas", "Hygiea", "Eris"),
-		"ice" = list("Europa", "Enceladus", "Triton", "Ganymede", "Callisto"),
-		"gas" = list("Jupiter", "Saturn", "Neptune", "Uranus"),
-		"lava" = list("Io", "Mustafar", "Vulcan", "Char"),
-		"oceanic" = list("Aquaria", "Oceanus", "Thalassa", "Poseidon"),
-		"desert" = list("Arrakis", "Tatooine", "Kharak", "Sahara Prime"),
-		"forest" = list("Endor", "Arboria", "Verdant", "Gaia")
-	)
+/datum/controller/subsystem/supercruise/proc/generate_planets(var/num_planets)
+	var/list/planet_types = GLOB.planet_types
 
 	// Generate 8-12 planets at various distances
 	var/list/used_positions = list()
@@ -49,7 +40,7 @@ datum/controller/subsystem/supercruise/proc/generate_planets(var/num_planets)
 		var/planet_type = pick(planet_types)
 
 		// Get a name for this planet type
-		var/planet_name = pick(planet_names[planet_type])
+		var/planet_name = "planet"
 
 		// Generate position - spread planets around the map
 		// Try to avoid overlapping
@@ -81,7 +72,7 @@ datum/controller/subsystem/supercruise/proc/generate_planets(var/num_planets)
 
 		if(valid_position)
 			used_positions += list(list("x" = x_pos, "y" = y_pos))
-			var/datum/orbital_object/planet/new_planet = new(x_pos, y_pos, planet_name, planet_type)
+			var/datum/orbital_object/planet/new_planet = new planet_type(x_pos, y_pos, planet_name)
 			// Note: new_planet is automatically added to orbital_objects in its New() proc
 			log_world("Generated planet: [planet_name] ([planet_type]) at ([x_pos], [y_pos])")
 

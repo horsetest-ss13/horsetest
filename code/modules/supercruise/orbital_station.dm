@@ -16,6 +16,7 @@
 	var/docking_range = 20
 	/// Is the station currently occupied by a docked shuttle?
 	var/occupied = FALSE
+	supercruise_color = "#1e5ac1"
 
 /datum/orbital_object/station/New(x_pos = 0, y_pos = 0, name_override)
 	. = ..()

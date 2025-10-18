@@ -21,13 +21,14 @@
 	var/velocity_y = 0
 	/// Render mode for UI (default, planet, shuttle, etc)
 	var/render_mode = "default"
-	/// Time when this object was created (for UI animation purposes)
-	var/created_at = 0
+	/// Color for rendering
+	var/supercruise_color = "#c17a23"
+	///how can a ship interact with the datum TODO!!!!!
+	var/list/interaction_options = list()
 
 /datum/orbital_object/New()
 	. = ..()
 	unique_id = "\ref[src]"
-	created_at = world.time
 	SSsupercruise.orbital_objects += src
 
 /datum/orbital_object/Destroy()
@@ -56,9 +57,9 @@
 		"velocity_y" = velocity_y,
 		"radius" = radius,
 		"render_mode" = render_mode,
-		"created_at" = created_at,
 		"vel_mult" = 1, // Velocity multiplier for UI interpolation
 		"priority" = 0, // For UI sorting
+		"supercruise_color"	= supercruise_color
 	)
 
 /**

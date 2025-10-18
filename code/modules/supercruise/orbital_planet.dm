@@ -7,52 +7,19 @@
 /datum/orbital_object/planet
 	render_mode = "planet"
 	radius = 8  // Larger than shuttles and stations
-
-	/// Planet type for visual variety
-	var/planet_type = "rocky"
-	/// Color for rendering
-	var/planet_color = "#8B7355"
 	/// Whether this planet can be landed on
 	var/landable = TRUE
 	/// Description shown when examining
 	var/description = "A distant celestial body."
 
-/datum/orbital_object/planet/New(x_pos = 0, y_pos = 0, planet_name = "Unknown Planet", set_type = "rocky")
+/datum/orbital_object/planet/New(x_pos, y_pos, planet_name, set_type = /datum/orbital_object/planet/rocky)
 	. = ..()
 	position_x = x_pos
 	position_y = y_pos
 	name = planet_name
-	planet_type = set_type
-
-	// Set color based on planet type
-	switch(planet_type)
-		if("rocky")
-			planet_color = "#8B7355"  // Brown
-			description = "A barren rocky world."
-		if("ice")
-			planet_color = "#B0E0E6"  // Light blue
-			description = "A frozen ice world."
-		if("gas")
-			planet_color = "#FFA07A"  // Light orange
-			description = "A massive gas giant."
-			landable = FALSE
-		if("lava")
-			planet_color = "#FF4500"  // Red-orange
-			description = "A volcanic hellscape."
-		if("oceanic")
-			planet_color = "#4682B4"  // Steel blue
-			description = "A world covered in vast oceans."
-		if("desert")
-			planet_color = "#DEB887"  // Burlywood
-			description = "An arid desert planet."
-		if("forest")
-			planet_color = "#228B22"  // Forest green
-			description = "A lush green world."
 
 /datum/orbital_object/planet/get_map_data()
 	var/list/data = ..()
-	data["planet_type"] = planet_type
-	data["planet_color"] = planet_color
 	data["landable"] = landable
 	return data
 
