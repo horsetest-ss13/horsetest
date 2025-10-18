@@ -4,7 +4,10 @@ import { useBackend } from '../backend';
 import { Box, Button, Flex, NoticeBox, Section } from 'tgui-core/components';
 import { Window } from '../layouts';
 import { SupercruiseMapSvg } from '../components/SupercruiseMapSvg';
-
+/**
+ * Hey folks I am not good with tgui this was made with the help of some AI shit
+ * so please like yell at me if anything looks like dogshit
+ */
 export const SupercruiseMap = (props) => {
   const { act, data } = useBackend();
   const {

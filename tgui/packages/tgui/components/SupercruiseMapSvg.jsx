@@ -1,10 +1,13 @@
 import { Component } from 'react';
-
-const FPS = 20;
+/**
+ * Hey folks I am not good with tgui this was made with the help of some AI shit
+ * so please like yell at me if anything looks like dogshit
+ */
+const FPS = 30; // Increased from 20 to 30 for smoother animation
 
 /**
  * Renders orbital objects on an SVG canvas
- * Updates at 20 FPS for smooth interpolation
+ * Updates at 30 FPS for smooth interpolation
  */
 export class SupercruiseMapSvg extends Component {
   constructor(props) {
@@ -17,39 +20,44 @@ export class SupercruiseMapSvg extends Component {
   }
 
   componentDidMount() {
-    this.tickUpdate = setInterval(() => this.doTick(), 1000 / FPS);
+    // Trigger re-renders at 30 FPS for smooth interpolation
+    this.renderUpdate = setInterval(() => this.forceUpdate(), 1000 / FPS);
   }
 
   componentWillUnmount() {
-    clearInterval(this.tickUpdate);
+    clearInterval(this.renderUpdate);
   }
 
-  doTick() {
-    const { map_objects = [], update_index } = this.props;
-    const newObjects = {};
+  componentDidUpdate(prevProps) {
+    const { update_index, map_objects = [] } = this.props;
 
-    // Update all objects
-    map_objects.forEach((obj) => {
-      newObjects[obj.id] = {
-        id: obj.id,
-        name: obj.name,
-        position_x: obj.position_x,
-        position_y: obj.position_y,
-        velocity_x: obj.velocity_x,
-        velocity_y: obj.velocity_y,
-        radius: obj.radius,
-        render_mode: obj.render_mode,
-        position_history: obj.position_history,
-        docking_range: obj.docking_range,
-        supercruise_color: obj.supercruise_color,  // Make sure to copy the color!
-      };
-    });
+    // Only update state when we get a new server update
+    if (prevProps.update_index !== update_index) {
+      const newObjects = {};
 
-    this.setState({
-      tickIndex: update_index,
-      tickTimer: new Date(),
-      objects: newObjects,
-    });
+      // Store the new positions from the server
+      map_objects.forEach((obj) => {
+        newObjects[obj.id] = {
+          id: obj.id,
+          name: obj.name,
+          position_x: obj.position_x,
+          position_y: obj.position_y,
+          velocity_x: obj.velocity_x,
+          velocity_y: obj.velocity_y,
+          radius: obj.radius,
+          render_mode: obj.render_mode,
+          position_history: obj.position_history,
+          docking_range: obj.docking_range,
+          supercruise_color: obj.supercruise_color,
+        };
+      });
+
+      this.setState({
+        tickIndex: update_index,
+        tickTimer: new Date(),
+        objects: newObjects,
+      });
+    }
   }
 
   render() {
@@ -70,10 +78,11 @@ export class SupercruiseMapSvg extends Component {
     const { update_index } = this.props;
 
     // Calculate interpolation elapsed time
-    let elapsed = 1;
+    // Cap at 0.5 seconds (the server update interval) to prevent extrapolation beyond the next update
+    let elapsed = 0;
     if (tickIndex === update_index) {
       const now = new Date();
-      elapsed = (now - tickTimer) / 1000;
+      elapsed = Math.min((now - tickTimer) / 1000, 0.5);
     }
 
     // Calculate spinning angle for autopilot target (continuous rotation)

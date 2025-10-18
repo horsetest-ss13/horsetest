@@ -6302,6 +6302,7 @@
 #include "code\modules\station_goals\station_goal.dm"
 #include "code\modules\station_goals\vault_mutation.dm"
 #include "code\modules\supercruise\orbital_object.dm"
+#include "code\modules\supercruise\orbital_outpost.dm"
 #include "code\modules\supercruise\orbital_planet.dm"
 #include "code\modules\supercruise\orbital_shuttle.dm"
 #include "code\modules\supercruise\orbital_station.dm"

@@ -7,7 +7,7 @@
 SUBSYSTEM_DEF(supercruise)
 	name = "Supercruise"
 	flags = SS_KEEP_TIMING
-	wait = 10 // Update every second (1 second = 10 deciseconds)
+	wait = 5 // Update every 0.5 seconds (5 deciseconds) for smoother client interpolation
 	priority = FIRE_PRIORITY_DEFAULT
 
 	/// All orbital objects being tracked
