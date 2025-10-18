@@ -35,7 +35,7 @@
 	// Start at a default position - shuttle is docked at station initially
 	controlled_shuttle.position_x = 100
 	controlled_shuttle.position_y = 50
-	SSsupercruise.orbital_objects += controlled_shuttle
+	// Note: controlled_shuttle is automatically added to orbital_objects in its New() proc
 	return TRUE
 
 /obj/machinery/computer/supercruise/Destroy()

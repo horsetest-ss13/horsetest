@@ -121,6 +121,6 @@
 	new_station.position_x = port.x * 0.5
 	new_station.position_y = port.y * 0.5
 
-	SSsupercruise.orbital_objects += new_station
+	// Note: new_station is automatically added to orbital_objects in its New() proc
 
 	return new_station

@@ -19,17 +19,17 @@ SUBSYSTEM_DEF(supercruise)
 /datum/controller/subsystem/supercruise/Initialize()
 	// Create a test station at coordinates (100, 50)
 	var/datum/orbital_object/station/test_station = new(100, 50, "Test Station Alpha")
-	orbital_objects += test_station
+	// Note: test_station is automatically added to orbital_objects in its New() proc
 
 	// Generate random planets in the system
-	generate_planets()
+	generate_planets(rand(8, 12))
 
 	return SS_INIT_SUCCESS
 
 /**
  * Generate a solar system with various planets
  */
-/datum/controller/subsystem/supercruise/proc/generate_planets()
+datum/controller/subsystem/supercruise/proc/generate_planets(var/num_planets)
 	var/list/planet_types = list("rocky", "ice", "gas", "lava", "oceanic", "desert", "forest")
 	var/list/planet_names = list(
 		"rocky" = list("Ceres", "Vesta", "Pallas", "Hygiea", "Eris"),
@@ -42,7 +42,6 @@ SUBSYSTEM_DEF(supercruise)
 	)
 
 	// Generate 8-12 planets at various distances
-	var/num_planets = rand(8, 12)
 	var/list/used_positions = list()
 
 	for(var/i in 1 to num_planets)
@@ -83,7 +82,7 @@ SUBSYSTEM_DEF(supercruise)
 		if(valid_position)
 			used_positions += list(list("x" = x_pos, "y" = y_pos))
 			var/datum/orbital_object/planet/new_planet = new(x_pos, y_pos, planet_name, planet_type)
-			orbital_objects += new_planet
+			// Note: new_planet is automatically added to orbital_objects in its New() proc
 			log_world("Generated planet: [planet_name] ([planet_type]) at ([x_pos], [y_pos])")
 
 /datum/controller/subsystem/supercruise/fire(resumed)
