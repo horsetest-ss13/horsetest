@@ -12,10 +12,8 @@
 	/// Description shown when examining
 	var/description = "A distant celestial body."
 
-/datum/orbital_object/planet/New(x_pos, y_pos, planet_name, set_type = /datum/orbital_object/planet/rocky)
-	. = ..()
-	position_x = x_pos
-	position_y = y_pos
+/datum/orbital_object/planet/New(x_pos, y_pos, planet_name, set_type = /datum/orbital_object/planet/rocky, datum/overmap_star_system/spawn_system = null)
+	. = ..(x_pos, y_pos, spawn_system)
 	name = planet_name
 
 /datum/orbital_object/planet/get_map_data()

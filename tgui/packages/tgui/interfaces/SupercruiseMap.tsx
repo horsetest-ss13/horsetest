@@ -4,12 +4,68 @@ import { useBackend } from '../backend';
 import { Box, Button, Flex, NoticeBox, Section } from 'tgui-core/components';
 import { Window } from '../layouts';
 import { SupercruiseMapSvg } from '../components/SupercruiseMapSvg';
+
+interface MapObject {
+  id: string;
+  name: string;
+  position_x: number;
+  position_y: number;
+  velocity_x: number;
+  velocity_y: number;
+  radius: number;
+  render_mode: string;
+  vel_mult: number;
+  priority: number;
+  supercruise_color: string;
+  system_id?: string;
+}
+
+interface NearbyObject {
+  id: string;
+  name: string;
+  distance: number;
+  type: string;
+  occupied: boolean;
+}
+
+interface JumpDestination {
+  id: string;
+  name: string;
+  description: string;
+}
+
+interface SupercruiseMapData {
+  map_objects: MapObject[];
+  linkedToShuttle: boolean;
+  shuttleName: string;
+  shuttleAngle: number;
+  shuttleThrust: number;
+  shuttleVelX: number;
+  shuttleVelY: number;
+  update_index: number;
+  ourObject: MapObject | null;
+  autopilotEnabled: boolean;
+  targetX: number | null;
+  targetY: number | null;
+  isDocked: boolean;
+  dockedStation: string | null;
+  nearbyStations: NearbyObject[];
+  nearbyObjects: NearbyObject[];
+  hasJumpDrive: boolean;
+  isJumping: boolean;
+  jumpCooldown: number;
+  jumpReady: boolean;
+  jumpCooldownRemaining: number;
+  jumpDestinations: JumpDestination[];
+  currentSystemName: string;
+}
+
 /**
  * Hey folks I am not good with tgui this was made with the help of some AI shit
  * so please like yell at me if anything looks like dogshit
  */
 export const SupercruiseMap = (props) => {
-  const { act, data } = useBackend();
+  const { act, data } = useBackend<SupercruiseMapData>();
   const {
     map_objects = [],
     linkedToShuttle = false,
@@ -27,9 +83,17 @@ export const SupercruiseMap = (props) => {
     dockedStation = null,
     nearbyStations = [],
     nearbyObjects = [],
+    hasJumpDrive = false,
+    isJumping = false,
+    jumpCooldown = 60,
+    jumpReady = true,
+    jumpCooldownRemaining = 0,
+    jumpDestinations = [],
+    currentSystemName = 'Unknown',
   } = data;
 
   const [zoomScale, setZoomScale] = useState(1);
+  const [selectedJumpDestination, setSelectedJumpDestination] = useState<string | null>(null);
 
   // Calculate velocity angle and speed
   const velocitySpeed = Math.sqrt(shuttleVelX * shuttleVelX + shuttleVelY * shuttleVelY);
@@ -243,6 +307,84 @@ export const SupercruiseMap = (props) => {
                       </NoticeBox>
                     )}
                   </Box>
+
+                  {/* Jump Drive Section */}
+                  {hasJumpDrive && (
+                    <Box mt={3}>
+                      <Box bold mb={1}>
+                        Jump Drive
+                      </Box>
+                      <Box mb={1} fontSize="0.9em" color="cyan">
+                        Current System: {currentSystemName}
+                      </Box>
+
+                      {isJumping ? (
+                        <NoticeBox color="orange">
+                          Jump in progress...
+                        </NoticeBox>
+                      ) : !jumpReady ? (
+                        <NoticeBox color="red">
+                          Cooling down: {Math.ceil(jumpCooldownRemaining)}s remaining
+                        </NoticeBox>
+                      ) : isDocked ? (
+                        <NoticeBox color="red">
+                          Cannot jump while docked - Undock first
+                        </NoticeBox>
+                      ) : jumpDestinations.length === 0 ? (
+                        <NoticeBox>
+                          No jump destinations available from this system
+                        </NoticeBox>
+                      ) : (
+                        <>
+                          <Box mb={1}>
+                            <Box fontSize="0.9em" mb={0.5}>
+                              Select Destination:
+                            </Box>
+                            <select
+                              style={{
+                                width: '100%',
+                                padding: '4px',
+                                backgroundColor: '#1a1a2e',
+                                color: '#ffffff',
+                                border: '1px solid #444',
+                                borderRadius: '3px',
+                              }}
+                              value={selectedJumpDestination || ''}
+                              onChange={(e) => setSelectedJumpDestination(e.target.value)}
+                            >
+                              <option value="">-- Select System --</option>
+                              {jumpDestinations.map((dest) => (
+                                <option key={dest.id} value={dest.id}>
+                                  {dest.name}
+                                </option>
+                              ))}
+                            </select>
+                          </Box>
+
+                          {selectedJumpDestination && (
+                            <Box mb={1} fontSize="0.85em" color="gray" italic>
+                              {jumpDestinations.find(d => d.id === selectedJumpDestination)?.description}
+                            </Box>
+                          )}
+
+                          <Button
+                            fluid
+                            icon="rocket"
+                            color="purple"
+                            disabled={!selectedJumpDestination}
+                            onClick={() => {
+                              if (selectedJumpDestination) {
+                                act('jump', { systemId: selectedJumpDestination });
+                                setSelectedJumpDestination(null);
+                              }
+                            }}
+                          >
+                            Initiate Jump
+                          </Button>
+                        </>
+                      )}
+                    </Box>
+                  )}
                 </>
               )}
             </Section>

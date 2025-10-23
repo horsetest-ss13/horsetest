@@ -22,20 +22,27 @@
 	if(!port)
 		return
 
-	// Check if an orbital shuttle already exists for this port
-	for(var/datum/orbital_object/shuttle/existing_shuttle in SSsupercruise.orbital_objects)
-		if(existing_shuttle.shuttle_port == port)
-			controlled_shuttle = existing_shuttle
-			return TRUE
+	// Check if an orbital shuttle already exists for this port in any system
+	for(var/system_id in SSsupercruise.star_systems)
+		var/datum/overmap_star_system/system = SSsupercruise.star_systems[system_id]
+		for(var/datum/orbital_object/shuttle/existing_shuttle in system.get_shuttles())
+			if(existing_shuttle.shuttle_port == port)
+				controlled_shuttle = existing_shuttle
+				return TRUE
 
-	// If no existing shuttle, create a new one
+	// If no existing shuttle, create a new one and add it to the default system
 	controlled_shuttle = new /datum/orbital_object/shuttle()
 	controlled_shuttle.shuttle_port = port
 	controlled_shuttle.name = port.name || "Shuttle"
 	// Start at a default position - shuttle is docked at station initially
 	controlled_shuttle.position_x = 100
 	controlled_shuttle.position_y = 50
-	// Note: controlled_shuttle is automatically added to orbital_objects in its New() proc
+
+	// Add shuttle to the default system
+	var/datum/overmap_star_system/default_system = SSsupercruise.get_default_system()
+	if(default_system)
+		default_system.add_object(controlled_shuttle)
+
 	return TRUE
 
 /obj/machinery/computer/supercruise/Destroy()
@@ -60,7 +67,9 @@
 	return GLOB.default_state
 
 /obj/machinery/computer/supercruise/ui_data(mob/user)
-	var/list/data = SSsupercruise.get_orbital_map_data()
+	// Get orbital map data for the shuttle's current system
+	var/system_id = controlled_shuttle?.star_system?.system_id
+	var/list/data = SSsupercruise.get_orbital_map_data(system_id)
 
 	// Add shuttle-specific data
 	if(controlled_shuttle)
@@ -86,7 +95,7 @@
 			docked_station_name = current_dock.name
 		data["dockedStation"] = docked_station_name
 
-		// Get nearby stations
+		// Get nearby stations (only in current system)
 		var/list/nearby_stations = list()
 		for(var/datum/orbital_object/station/station in controlled_shuttle.get_nearby_stations())
 			nearby_stations += list(list(
@@ -97,7 +106,7 @@
 			))
 		data["nearbyStations"] = nearby_stations
 
-		// Get ALL nearby interactable objects (generic)
+		// Get ALL nearby interactable objects (generic, only in current system)
 		var/list/nearby_objects = list()
 		for(var/datum/orbital_object/obj in controlled_shuttle.get_nearby_objects(30))
 			nearby_objects += list(list(
@@ -112,6 +121,16 @@
 		if(controlled_shuttle.target_position)
 			data["targetX"] = controlled_shuttle.target_position["x"]
 			data["targetY"] = controlled_shuttle.target_position["y"]
+
+		// Jump drive data
+		data["hasJumpDrive"] = controlled_shuttle.has_jump_drive
+		data["isJumping"] = controlled_shuttle.is_jumping
+		data["jumpCooldown"] = controlled_shuttle.jump_cooldown
+		var/time_since_jump = (world.time - controlled_shuttle.last_jump_time)
+		data["jumpReady"] = (time_since_jump >= controlled_shuttle.jump_cooldown)
+		data["jumpCooldownRemaining"] = max(0, controlled_shuttle.jump_cooldown - time_since_jump) / 10
+		data["jumpDestinations"] = controlled_shuttle.get_jump_destinations()
+		data["currentSystemName"] = controlled_shuttle.star_system?.system_name || "Unknown"
 	else
 		data["linkedToShuttle"] = FALSE
 
@@ -177,30 +196,20 @@
 			return TRUE
 
 		if("dock")
-			var/object_id = params["stationId"]  // Keep param name for compatibility
+			var/object_id = params["stationId"]
 			if(!object_id)
 				return FALSE
 
-			// Find the object (generic - can be any orbital object)
-			var/datum/orbital_object/target_object = null
-			for(var/datum/orbital_object/obj in SSsupercruise.orbital_objects)
-				if(obj.unique_id == object_id)
-					target_object = obj
-					break
-
+			// Find object in the shuttle's current system
+			var/datum/overmap_star_system/current_system = SSsupercruise.get_current_system(controlled_shuttle)
+			var/datum/orbital_object/target_object = SSsupercruise.find_object(object_id, current_system)
 			if(!target_object)
-				to_chat(usr, span_warning("Object not found!"))
+				to_chat(usr, span_warning("Object not found in current system!"))
 				return FALSE
 
-			// Use generic interact method
 			var/interact_result = target_object.interact(controlled_shuttle, usr)
 			if(interact_result)
 				to_chat(usr, span_warning("Interaction failed: [interact_result]"))
-			else
-				// Success messages are handled by the interact() method
-				// Station-specific success message
-				if(istype(target_object, /datum/orbital_object/station))
-					to_chat(usr, span_notice("Docking successful at [target_object.name]"))
 			return TRUE
 
 		if("undock")
@@ -209,4 +218,15 @@
 				to_chat(usr, span_warning("Undocking failed: [undock_result]"))
 			else
 				to_chat(usr, span_notice("Undocked successfully"))
+			return TRUE
+
+		if("jump")
+			var/target_system_id = params["systemId"]
+			if(!target_system_id)
+				to_chat(usr, span_warning("No target system specified!"))
+				return FALSE
+
+			var/jump_result = controlled_shuttle.jump_to_system(target_system_id, usr)
+			if(jump_result)
+				to_chat(usr, span_warning("Jump failed: [jump_result]"))
 			return TRUE

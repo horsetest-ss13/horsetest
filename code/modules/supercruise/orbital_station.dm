@@ -18,10 +18,8 @@
 	var/occupied = FALSE
 	supercruise_color = "#1e5ac1"
 
-/datum/orbital_object/station/New(x_pos = 0, y_pos = 0, name_override)
-	. = ..()
-	position_x = x_pos
-	position_y = y_pos
+/datum/orbital_object/station/New(x_pos = 0, y_pos = 0, name_override, datum/overmap_star_system/spawn_system = null)
+	. = ..(x_pos, y_pos, spawn_system)
 	if(name_override)
 		station_name = name_override
 		name = name_override
@@ -85,14 +83,23 @@
 	return null // Success
 
 /**
- * Interaction 4 stations
+ * Interaction for stations - handles docking
  */
 /datum/orbital_object/station/interact(datum/orbital_object/shuttle/interacting_shuttle, mob/user)
 	if(!istype(interacting_shuttle))
 		return "Only shuttles can dock with stations"
 
 	var/dock_result = interacting_shuttle.dock_at_station(src)
-	return dock_result
+
+	if(dock_result)
+		// Error occurred
+		return dock_result
+
+	// Success - show message to user
+	if(user)
+		to_chat(user, span_notice("Docking successful at [station_name]"))
+
+	return null // Success
 
 /**
  * Link a docking port to this station
@@ -106,11 +113,13 @@
  * Find or create a station object for a given docking port
  * This is used to automatically link stations when shuttles undock
  */
-/datum/orbital_object/station/proc/find_or_create_for_port(obj/docking_port/stationary/port)
-	// Check if a station already exists for this port
-	for(var/datum/orbital_object/station/existing_station in SSsupercruise.orbital_objects)
-		if(port in existing_station.docking_ports)
-			return existing_station
+/datum/orbital_object/station/proc/find_or_create_for_port(obj/docking_port/stationary/port, datum/overmap_star_system/target_system)
+	// Check if a station already exists for this port in any system
+	for(var/system_id in SSsupercruise.star_systems)
+		var/datum/overmap_star_system/system = SSsupercruise.star_systems[system_id]
+		for(var/datum/orbital_object/station/existing_station in system.get_stations())
+			if(port in existing_station.docking_ports)
+				return existing_station
 
 	// No existing station, create a new one
 	var/datum/orbital_object/station/new_station = new()
@@ -122,6 +131,9 @@
 	new_station.position_x = port.x * 0.5
 	new_station.position_y = port.y * 0.5
 
-	// Note: new_station is automatically added to orbital_objects in its New() proc
+	// Add to the target system (or default system if none specified)
+	if(!target_system)
+		target_system = SSsupercruise.get_default_system()
+	target_system.add_object(new_station)
 
 	return new_station

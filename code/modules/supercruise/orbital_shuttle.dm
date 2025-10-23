@@ -40,6 +40,15 @@
 	/// The original stationary port where the shuttle was docked before entering supercruise
 	var/obj/docking_port/stationary/original_dock = null
 
+	/// Does this shuttle have a jump drive installed?
+	var/has_jump_drive = TRUE
+	/// Cooldown between jumps in seconds
+	var/jump_cooldown = 60 SECONDS
+	/// World time of the last jump
+	var/last_jump_time = 0
+	/// Is the shuttle currently jumping between systems?
+	var/is_jumping = FALSE
+
 /datum/orbital_object/shuttle/process(seconds_per_tick)
 	// Don't process movement if docked
 	// Check both: docked at a station object OR not in transit dock
@@ -258,21 +267,108 @@
  */
 /datum/orbital_object/shuttle/proc/get_nearby_stations()
 	var/list/nearby = list()
-	for(var/datum/orbital_object/station/station in SSsupercruise.orbital_objects)
+	if(!star_system)
+		return nearby
+
+	for(var/datum/orbital_object/station/station in star_system.get_stations())
 		if(station.in_docking_range(src))
 			nearby += station
 	return nearby
 
 /**
  * Get nearby objects that can be interacted with (generic version)
- * Returns all objects within interaction range
+ * Returns all objects within interaction range in the same system
  */
 /datum/orbital_object/shuttle/proc/get_nearby_objects(interaction_range = 30)
 	var/list/nearby = list()
-	for(var/datum/orbital_object/obj in SSsupercruise.orbital_objects)
+	if(!star_system)
+		return nearby
+
+	for(var/datum/orbital_object/obj in star_system.orbital_objects)
 		if(obj == src)
 			continue // Don't include ourselves
 		var/dist = sqrt((obj.position_x - position_x)**2 + (obj.position_y - position_y)**2)
 		if(dist <= interaction_range)
 			nearby += obj
 	return nearby
+
+/**
+ * Initiate a jump to another star system
+ * Returns null on success, error message string on failure
+ */
+/datum/orbital_object/shuttle/proc/jump_to_system(system_id, mob/user)
+	// Check if we have a jump drive
+	if(!has_jump_drive)
+		return "This shuttle does not have a jump drive installed"
+
+	// Check if we're currently jumping
+	if(is_jumping)
+		return "Jump drive is already charging"
+
+	// Check if docked
+	if(docked_at || is_docking)
+		return "Cannot jump while docked - undock first"
+
+	// Check cooldown
+	var/time_since_jump = (world.time - last_jump_time)
+	if(time_since_jump < jump_cooldown)
+		var/remaining = jump_cooldown - time_since_jump
+		return "Jump drive is cooling down - [round(remaining)] seconds remaining"
+
+	// Check if we're in a system
+	if(!star_system)
+		return "Error: Shuttle is not in a star system"
+
+	// Get target system
+	var/datum/overmap_star_system/target_system = SSsupercruise.get_system(system_id)
+	if(!target_system)
+		return "Error: Target system not found"
+
+	// Don't allow jumping to the same system
+	if(target_system == star_system)
+		return "Already in target system"
+
+	// Start jump sequence
+	is_jumping = TRUE
+
+	// Announce jump
+	if(user)
+		to_chat(user, span_notice("Initiating jump to [target_system.system_name]..."))
+
+	// Execute jump using SSsupercruise
+	var/jump_result = SSsupercruise.move_to_system(src, target_system, position_x, position_y)
+
+	if(!jump_result)
+		is_jumping = FALSE
+		return "Error: Failed to execute jump"
+
+	// Update jump time and status
+	last_jump_time = world.time
+	is_jumping = FALSE
+
+	if(user)
+		to_chat(user, span_notice("Jump complete! Now in [target_system.system_name]."))
+
+	return null // Success
+
+/**
+ * Get available jump destinations from current system
+ */
+/datum/orbital_object/shuttle/proc/get_jump_destinations()
+	if(!star_system)
+		return list()
+
+	var/list/destinations = list()
+	// Get all systems that allow jumping (except the current system)
+	for(var/system_id in SSsupercruise.star_systems)
+		var/datum/overmap_star_system/system = SSsupercruise.star_systems[system_id]
+		// Don't show current system or systems that can't be jumped to
+		if(system == star_system || !system.can_jump)
+			continue
+		destinations += list(list(
+			"id" = system.system_id,
+			"name" = system.system_name,
+			"description" = system.system_description
+		))
+
+	return destinations

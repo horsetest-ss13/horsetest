@@ -25,14 +25,24 @@
 	var/supercruise_color = "#c17a23"
 	///how can a ship interact with the datum TODO!!!!!
 	var/list/interaction_options = list()
+	/// The star system this object belongs to
+	var/datum/overmap_star_system/star_system = null
 
-/datum/orbital_object/New()
+/datum/orbital_object/New(x_pos = 0, y_pos = 0, datum/overmap_star_system/spawn_system = null)
 	. = ..()
 	unique_id = "\ref[src]"
-	SSsupercruise.orbital_objects += src
+	position_x = x_pos
+	position_y = y_pos
+	// Add to the specified system, or the default system if none specified
+	if(!spawn_system)
+		spawn_system = SSsupercruise.get_default_system()
+	if(spawn_system)
+		spawn_system.add_object(src)
 
 /datum/orbital_object/Destroy()
-	SSsupercruise.orbital_objects -= src
+	// Remove from star system if we belong to one
+	if(star_system)
+		star_system.remove_object(src)
 	return ..()
 
 /**
@@ -59,7 +69,8 @@
 		"render_mode" = render_mode,
 		"vel_mult" = 1, // Velocity multiplier for UI interpolation
 		"priority" = 0, // For UI sorting
-		"supercruise_color"	= supercruise_color
+		"supercruise_color"	= supercruise_color,
+		"system_id" = star_system?.system_id
 	)
 
 /**
