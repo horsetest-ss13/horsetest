@@ -23,7 +23,7 @@
 	var/max_x = 600
 	var/min_y = -300
 	var/max_y = 600
-	/// Whether this system can be jumped to (shows up in jump dropdown)
+	/// Whether this system can be jumped to
 	var/can_jump = TRUE
 
 /datum/overmap_star_system/New(id, name, description)
