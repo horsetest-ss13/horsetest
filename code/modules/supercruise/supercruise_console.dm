@@ -14,11 +14,9 @@
 
 /obj/machinery/computer/supercruise/Initialize(mapload)
 	. = ..()
-	connect_to_shuttle(mapload, SSshuttle.get_containing_shuttle(src))
+	connect_to_shuttle(SSshuttle.get_containing_shuttle(src))
 
 /obj/machinery/computer/supercruise/connect_to_shuttle(mapload, obj/docking_port/mobile/port, obj/docking_port/stationary/dock)
-	if(!mapload)
-		return
 	if(!port)
 		return
 
