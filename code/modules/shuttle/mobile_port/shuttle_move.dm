@@ -5,9 +5,21 @@
 
 	if(new_dock.get_docked() == src)
 		remove_ripples()
+		clear_docking_ticket() // Clear ticket on successful dock
 		return DOCKING_SUCCESS
 
 	if(!force)
+		// Validate docking ticket if we have one
+		if(current_ticket)
+			if(!validate_docking_ticket())
+				remove_ripples()
+				return DOCKING_BLOCKED
+			// Check that ticket is for this port
+			if(current_ticket.target_port != new_dock)
+				remove_ripples()
+				clear_docking_ticket()
+				return DOCKING_BLOCKED
+
 		if(!check_dock(new_dock))
 			remove_ripples()
 			return DOCKING_BLOCKED
@@ -102,6 +114,10 @@
 
 	// remove any stragglers just in case, and clear the list
 	remove_ripples()
+
+	// Clear docking ticket on successful completion
+	clear_docking_ticket()
+
 	return DOCKING_SUCCESS
 
 /obj/docking_port/mobile/proc/preflight_check(list/old_turfs, list/new_turfs, list/areas_to_move, list/underlying_areas, rotation)

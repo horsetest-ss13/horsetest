@@ -827,6 +827,7 @@
 #include "code\datums\dash_weapon.dm"
 #include "code\datums\datum.dm"
 #include "code\datums\datumvars.dm"
+#include "code\datums\docking_ticket.dm"
 #include "code\datums\dog_fashion.dm"
 #include "code\datums\drift_handler.dm"
 #include "code\datums\ductnet.dm"
