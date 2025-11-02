@@ -13,6 +13,8 @@
 	var/description = "A distant celestial body."
 	/// The map generator type to use for this planet
 	var/map_generator_type = /datum/map_generator/planet_generator/rocky
+	/// The atmosphere type for this planet
+	var/datum/atmosphere/atmosphere_type = /datum/atmosphere/airless
 	/// Reference to the generated virtual level
 	var/datum/virtual_level/planet_level
 	/// List of docking ports for ship landing
@@ -40,7 +42,13 @@
 		return FALSE
 
 	var/datum/map_generator/planet_generator/generator = new map_generator_type()
-	var/list/result = generator.generate_planet_level(name, planet_size, baseturf_type)
+
+	// Create atmosphere datum if type is specified
+	var/datum/atmosphere/atmos = null
+	if(atmosphere_type)
+		atmos = new atmosphere_type()
+
+	var/list/result = generator.generate_planet_level(name, planet_size, baseturf_type, null, atmos)
 
 	if(!result || !length(result))
 		log_world("ERROR: Failed to generate planet level for [name]")

@@ -1,51 +1,92 @@
 ///This datum handles the transitioning from a turf to a specific biome, and handles spawning decorative structures and mobs.
 /datum/biome
-	///Type of turf this biome creates
-	var/turf_type
-	/// Chance of having a structure from the flora types list spawn
-	var/flora_density = 0
-	/// Chance of spawning special features, such as geysers.
-	var/feature_density = 0
-	/// Chance of having a mob from the fauna types list spawn
-	var/fauna_density = 0
-	/// Weighted list of type paths of flora that can be spawned when the
-	/// turf spawns flora.
-	var/list/flora_types = list()
-	/// Weighted list of extra features that can spawn in the biome, such as
-	/// geysers. Gets expanded automatically.
-	var/list/feature_types = list()
-	/// Weighted list of type paths of fauna that can be spawned when the
-	/// turf spawns fauna.
-	var/list/fauna_types = list()
+	/// WEIGHTED list of open turfs (floors) that this biome can place
+	var/list/open_turf_types = list(/turf/open/misc/asteroid = 1)
+	/// EXPANDED (no values) list of open turfs that this biome can place
+	var/list/open_turf_types_expanded
+
+	/// WEIGHTED list of flora that this biome can spawn. Flora do not have any local keep-away logic
+	var/list/flora_spawn_list = list()
+	/// EXPANDED (no values) list of flora that this biome can spawn
+	var/list/flora_spawn_list_expanded
+	/// Percentage chance per turf to spawn flora
+	var/flora_spawn_chance = 0
+
+	/// WEIGHTED list of features that this biome can spawn. Features will not spawn within 7 tiles of other features of the same type
+	var/list/feature_spawn_list = list()
+	/// EXPANDED (no values) list of features that this biome can spawn
+	var/list/feature_spawn_list_expanded
+	/// Percentage chance per turf to spawn features
+	var/feature_spawn_chance = 0
+
+	/// WEIGHTED list of mobs that this biome can spawn. Mobs have 12-tile keep-away radius from other hostile mobs
+	var/list/mob_spawn_list = list()
+	/// EXPANDED (no values) list of mobs that this biome can spawn
+	var/list/mob_spawn_list_expanded
+	/// Percentage chance per turf to spawn mobs
+	var/mob_spawn_chance = 0
+
+	// Legacy compatibility - keep old variable names as deprecated aliases
+	var/turf_type  // Deprecated - use open_turf_types instead
+	var/flora_density  // Deprecated - use flora_spawn_chance instead
+	var/feature_density  // Deprecated - use feature_spawn_chance instead
+	var/fauna_density  // Deprecated - use mob_spawn_chance instead
+	var/list/flora_types  // Deprecated - use flora_spawn_list instead
+	var/list/feature_types  // Deprecated - use feature_spawn_list instead
+	var/list/fauna_types  // Deprecated - use mob_spawn_list instead
 
 
 /datum/biome/New()
 	. = ..()
-	if(length(flora_types))
-		flora_types = expand_weights(fill_with_ones(flora_types))
 
-	if(length(fauna_types))
-		fauna_types = expand_weights(fill_with_ones(fauna_types))
+	// Handle legacy compatibility - convert old variable names to new ones
+	if(turf_type && !length(open_turf_types))
+		open_turf_types = list(turf_type = 1)
+	if(flora_density && !flora_spawn_chance)
+		flora_spawn_chance = flora_density
+	if(feature_density && !feature_spawn_chance)
+		feature_spawn_chance = feature_density
+	if(fauna_density && !mob_spawn_chance)
+		mob_spawn_chance = fauna_density
+	if(length(flora_types) && !length(flora_spawn_list))
+		flora_spawn_list = flora_types
+	if(length(feature_types) && !length(feature_spawn_list))
+		feature_spawn_list = feature_types
+	if(length(fauna_types) && !length(mob_spawn_list))
+		mob_spawn_list = fauna_types
 
-	if(length(feature_types))
-		feature_types = expand_weights(feature_types)
+	// Expand weighted lists for PentestSS13 structure
+	if(length(open_turf_types))
+		open_turf_types_expanded = expand_weights(fill_with_ones(open_turf_types))
+
+	if(length(flora_spawn_list))
+		flora_spawn_list_expanded = expand_weights(fill_with_ones(flora_spawn_list))
+
+	if(length(feature_spawn_list))
+		feature_spawn_list_expanded = expand_weights(fill_with_ones(feature_spawn_list))
+
+	if(length(mob_spawn_list))
+		mob_spawn_list_expanded = expand_weights(fill_with_ones(mob_spawn_list))
 
 
 ///This proc handles the creation of a turf of a specific biome type
 /datum/biome/proc/generate_turf(turf/gen_turf)
-	gen_turf.ChangeTurf(turf_type, null, CHANGETURF_DEFER_CHANGE)
-	if(length(flora_types) && prob(flora_density))
-		var/obj/structure/flora = pick(flora_types)
+	// Pick a turf type from weighted list
+	var/picked_turf = pick(open_turf_types_expanded)
+	gen_turf.ChangeTurf(picked_turf, null, CHANGETURF_DEFER_CHANGE)
+
+	if(length(flora_spawn_list_expanded) && prob(flora_spawn_chance))
+		var/obj/structure/flora = pick(flora_spawn_list_expanded)
 		new flora(gen_turf)
 		return
 
-	if(length(feature_types) && prob(feature_density))
-		var/atom/picked_feature = pick(feature_types)
+	if(length(feature_spawn_list_expanded) && prob(feature_spawn_chance))
+		var/atom/picked_feature = pick(feature_spawn_list_expanded)
 		new picked_feature(gen_turf)
 		return
 
-	if(length(fauna_types) && prob(fauna_density))
-		var/mob/fauna = pick(fauna_types)
+	if(length(mob_spawn_list_expanded) && prob(mob_spawn_chance))
+		var/mob/fauna = pick(mob_spawn_list_expanded)
 		new fauna(gen_turf)
 
 
@@ -53,7 +94,8 @@
 /// that the turf has not been initialized yet. Don't call this unless you know
 /// what you're doing.
 /datum/biome/proc/generate_turf_for_terrain(turf/gen_turf)
-	var/turf/new_turf = new turf_type(gen_turf)
+	var/picked_turf = pick(open_turf_types_expanded)
+	var/turf/new_turf = new picked_turf(gen_turf)
 	return new_turf
 
 
@@ -70,7 +112,8 @@
 	var/list/turf/new_turfs = list()
 
 	for(var/turf/gen_turf as anything in gen_turfs)
-		var/turf/new_turf = new turf_type(gen_turf)
+		var/picked_turf = pick(open_turf_types_expanded)
+		var/turf/new_turf = new picked_turf(gen_turf)
 		new_turfs += new_turf
 
 		if(gen_turf.turf_flags & NO_RUINS)
@@ -84,15 +127,15 @@
 /// This proc handles populating the given turf based on whether flora,
 /// features and fauna are allowed. Does not take megafauna into account.
 /datum/biome/proc/populate_turf(turf/target_turf, flora_allowed, features_allowed, fauna_allowed)
-	if(flora_allowed && length(flora_types) && prob(flora_density))
-		var/obj/structure/flora = pick(flora_types)
+	if(flora_allowed && length(flora_spawn_list_expanded) && prob(flora_spawn_chance))
+		var/obj/structure/flora = pick(flora_spawn_list_expanded)
 		new flora(target_turf)
 		return TRUE
 
-	if(features_allowed && length(feature_types) && prob(feature_density))
+	if(features_allowed && length(feature_spawn_list_expanded) && prob(feature_spawn_chance))
 		var/can_spawn = TRUE
 
-		var/atom/picked_feature = pick(feature_types)
+		var/atom/picked_feature = pick(feature_spawn_list_expanded)
 
 		for(var/obj/structure/existing_feature in range(7, target_turf))
 			if(istype(existing_feature, picked_feature))
@@ -103,12 +146,12 @@
 			new picked_feature(target_turf)
 			return TRUE
 
-	if(fauna_allowed && length(fauna_types) && prob(fauna_density))
-		// Check that fauna_types list is properly initialized (not empty after expansion)
-		if(!length(fauna_types))
+	if(fauna_allowed && length(mob_spawn_list_expanded) && prob(mob_spawn_chance))
+		// Check that mob_spawn_list_expanded is properly initialized (not empty after expansion)
+		if(!length(mob_spawn_list_expanded))
 			return FALSE
 
-		var/mob/picked_mob = pick(fauna_types)
+		var/mob/picked_mob = pick(mob_spawn_list_expanded)
 
 		// prevents tendrils spawning in each other's collapse range
 		if(ispath(picked_mob, /obj/structure/spawner/lavaland))
@@ -137,7 +180,7 @@
  * allowed type. Aka, we return early if the proc wouldn't do anything anyway.
  */
 /datum/biome/proc/populate_turfs(list/turf/target_turfs, flora_allowed, features_allowed, fauna_allowed)
-	if(!(flora_allowed && length(flora_types)) && !(features_allowed && length(feature_types)) && !(fauna_allowed && length(fauna_types)))
+	if(!(flora_allowed && length(flora_spawn_list_expanded)) && !(features_allowed && length(feature_spawn_list_expanded)) && !(fauna_allowed && length(mob_spawn_list_expanded)))
 		return
 
 
@@ -146,15 +189,15 @@
 		// in this.
 		CHECK_TICK
 
-		if(flora_allowed && length(flora_types) && prob(flora_density))
-			var/obj/structure/flora = pick(flora_types)
+		if(flora_allowed && length(flora_spawn_list_expanded) && prob(flora_spawn_chance))
+			var/obj/structure/flora = pick(flora_spawn_list_expanded)
 			new flora(target_turf)
 			continue
 
-		if(features_allowed && prob(feature_density))
+		if(features_allowed && prob(feature_spawn_chance))
 			var/can_spawn = TRUE
 
-			var/atom/picked_feature = pick(feature_types)
+			var/atom/picked_feature = pick(feature_spawn_list_expanded)
 
 			for(var/obj/structure/existing_feature in range(7, target_turf))
 				if(istype(existing_feature, picked_feature))
@@ -165,8 +208,8 @@
 				new picked_feature(target_turf)
 				continue
 
-		if(fauna_allowed && length(fauna_types) && prob(fauna_density))
-			var/mob/picked_mob = pick(fauna_types)
+		if(fauna_allowed && length(mob_spawn_list_expanded) && prob(mob_spawn_chance))
+			var/mob/picked_mob = pick(mob_spawn_list_expanded)
 
 			// prevents tendrils spawning in each other's collapse range
 			if(ispath(picked_mob, /obj/structure/spawner/lavaland))
@@ -183,54 +226,262 @@
 			new picked_mob(target_turf)
 
 
-/datum/biome/mudlands
-	turf_type = /turf/open/misc/dirt/jungle/dark
-	flora_types = list(
-		/obj/structure/flora/grass/jungle/a/style_random = 1,
-		/obj/structure/flora/grass/jungle/b/style_random = 1,
-		/obj/structure/flora/rock/pile/jungle/style_random = 1,
-		/obj/structure/flora/rock/pile/jungle/large/style_random = 1,
+// ============================================================================
+// PLANETARY BIOMES FOR SUPERCRUISE PLANET GENERATION
+// ============================================================================
+// NOTE: These simple biomes are ONLY used for visual representation in supercruise.
+// Actual planet generation uses detailed biomes from the individual biome files
+// (lavaland_biomes.dm, snow_biomes.dm, jungle_biomes.dm, etc.)
+// ============================================================================
+
+/datum/biome/planet_asteroid
+	open_turf_types = list(/turf/open/misc/asteroid = 1)
+	flora_spawn_chance = 5
+	mob_spawn_chance = 0
+	feature_spawn_chance = 1
+	flora_spawn_list = list(
+		/obj/structure/flora/rock = 3,
+		/obj/structure/flora/rock/pile = 1,
 	)
-	flora_density = 3
 
-/datum/biome/plains
-	turf_type = /turf/open/misc/grass/jungle
-	flora_types = list(
-		/obj/structure/flora/grass/jungle/a/style_random = 1,
-		/obj/structure/flora/grass/jungle/b/style_random = 1,
-		/obj/structure/flora/tree/jungle/style_random = 1,
-		/obj/structure/flora/rock/pile/jungle/style_random = 1,
-		/obj/structure/flora/bush/jungle/a/style_random = 1,
-		/obj/structure/flora/bush/jungle/b/style_random = 1,
-		/obj/structure/flora/bush/jungle/c/style_random = 1,
-		/obj/structure/flora/bush/large/style_random = 1,
-		/obj/structure/flora/rock/pile/jungle/large/style_random = 1,
+/datum/biome/planet_ice
+	open_turf_types = list(/turf/open/misc/asteroid/snow/icemoon = 1)
+	flora_spawn_chance = 8
+	mob_spawn_chance = 0
+	feature_spawn_chance = 2
+	flora_spawn_list = list(
+		/obj/structure/flora/rock = 2,
+		/obj/structure/flora/rock/pile = 2,
+		/obj/structure/flora/grass/brown = 1,
+		/obj/structure/flora/grass/both = 1,
 	)
-	flora_density = 15
 
-/datum/biome/jungle
-	turf_type = /turf/open/misc/grass/jungle
-	flora_types = list(
-		/obj/structure/flora/grass/jungle/a/style_random = 1,
-		/obj/structure/flora/grass/jungle/b/style_random = 1,
-		/obj/structure/flora/tree/jungle/style_random = 1,
-		/obj/structure/flora/rock/pile/jungle/style_random = 1,
-		/obj/structure/flora/bush/jungle/a/style_random = 1,
-		/obj/structure/flora/bush/jungle/b/style_random = 1,
-		/obj/structure/flora/bush/jungle/c/style_random = 1,
-		/obj/structure/flora/bush/large/style_random = 1,
-		/obj/structure/flora/rock/pile/jungle/large/style_random = 1,
+/datum/biome/planet_lava
+	open_turf_types = list(/turf/open/misc/asteroid/basalt/lava_land_surface = 1)
+	flora_spawn_chance = 10
+	mob_spawn_chance = 0
+	feature_spawn_chance = 3
+	flora_spawn_list = list(
+		/obj/structure/flora/rock = 3,
+		/obj/structure/flora/rock/pile = 2,
+		/obj/structure/flora/bush = 2,
 	)
-	flora_density = 40
 
-/datum/biome/jungle/deep
-	flora_density = 65
+/datum/biome/planet_jungle
+	open_turf_types = list(/turf/open/floor/grass = 1)
+	flora_spawn_chance = 20
+	mob_spawn_chance = 0
+	feature_spawn_chance = 5
+	flora_spawn_list = list(
+		/obj/structure/flora/tree/jungle = 5,
+		/obj/structure/flora/bush = 4,
+		/obj/structure/flora/grass/jungle = 3,
+		/obj/structure/flora/grass/jungle/b = 3,
+		/obj/structure/flora/rock = 1,
+	)
 
-/datum/biome/wasteland
-	turf_type = /turf/open/misc/dirt/jungle/wasteland
+/datum/biome/planet_desert
+	open_turf_types = list(/turf/open/misc/beach/sand = 1)
+	flora_spawn_chance = 3
+	mob_spawn_chance = 0
+	feature_spawn_chance = 1
+	flora_spawn_list = list(
+		/obj/structure/flora/rock = 3,
+		/obj/structure/flora/rock/pile = 2,
+		/obj/structure/flora/bush/grassy = 1,
+	)
 
-/datum/biome/water
-	turf_type = /turf/open/water/jungle
+/datum/biome/planet_beach
+	open_turf_types = list(/turf/open/misc/beach/sand = 1)
+	flora_spawn_chance = 6
+	mob_spawn_chance = 0
+	feature_spawn_chance = 2
+	flora_spawn_list = list(
+		/obj/structure/flora/tree/palm = 1,
+		/obj/structure/flora/bush/grassy = 2,
+		/obj/structure/flora/rock = 3,
+		/obj/structure/flora/grass/both = 2,
+	)
 
-/datum/biome/mountain
-	turf_type = /turf/closed/mineral/random/jungle
+/datum/biome/planet_grassland
+	open_turf_types = list(/turf/open/floor/grass = 1)
+	flora_spawn_chance = 12
+	mob_spawn_chance = 0
+	feature_spawn_chance = 3
+	flora_spawn_list = list(
+		/obj/structure/flora/grass/jungle = 3,
+		/obj/structure/flora/grass/jungle/b = 3,
+		/obj/structure/flora/bush = 2,
+		/obj/structure/flora/bush/grassy = 2,
+		/obj/structure/flora/tree/jungle = 1,
+		/obj/structure/flora/rock = 1,
+	)
+
+/datum/biome/planet_wasteland
+	open_turf_types = list(/turf/open/misc/asteroid = 1)
+	flora_spawn_chance = 15
+	mob_spawn_chance = 0
+	feature_spawn_chance = 8
+	flora_spawn_list = list(
+		/obj/structure/flora/rock = 3,
+		/obj/structure/flora/rock/pile = 2,
+		/obj/structure/girder/displaced = 1,
+	)
+
+// ============================================================================
+// CAVE BIOME BASE CLASS
+// ============================================================================
+
+/**
+ * Cave biomes are special biomes that use cellular automata to create
+ * natural cave systems with walls (closed_turf_types) and floors (open_turf_types).
+ * The string_gen parameter determines which turfs become walls vs floors.
+ */
+/datum/biome/cave
+	/// WEIGHTED list of closed turfs (walls/minerals) that this cave biome can place
+	var/list/closed_turf_types = list(/turf/closed/mineral/random = 1)
+	/// EXPANDED (no values) list of closed turfs
+	var/list/closed_turf_types_expanded
+
+/datum/biome/cave/New()
+	. = ..()
+	if(length(closed_turf_types))
+		closed_turf_types_expanded = expand_weights(fill_with_ones(closed_turf_types))
+
+/**
+ * Cave biomes override this to check the CA string and pick closed vs open turf
+ * The string_gen is a cellular automata string where each character represents a cell
+ * '0' = open space (floor), '1' = closed (wall)
+ */
+/datum/biome/cave/generate_turfs_for_terrain(list/turf/gen_turfs, string_gen = null)
+	var/list/turf/new_turfs = list()
+
+	for(var/turf/gen_turf as anything in gen_turfs)
+		var/picked_turf_type
+
+		// If we have a CA string, use it to determine wall vs floor
+		if(string_gen && length(string_gen))
+			// Calculate the index in the string for this turf
+			// String is organized as a 2D grid: row-major order
+			var/string_index = world.maxx * (gen_turf.y - 1) + gen_turf.x
+
+			// Check if this position should be closed (wall) or open (floor)
+			var/cell_value = text2num(copytext(string_gen, string_index, string_index + 1))
+
+			if(cell_value)  // Non-zero = wall
+				picked_turf_type = pick(closed_turf_types_expanded)
+			else  // Zero = floor
+				picked_turf_type = pick(open_turf_types_expanded)
+		else
+			// No CA string, just use open turf types
+			picked_turf_type = pick(open_turf_types_expanded)
+
+		var/turf/new_turf = new picked_turf_type(gen_turf)
+		new_turfs += new_turf
+
+		if(gen_turf.turf_flags & NO_RUINS)
+			new_turf.turf_flags |= NO_RUINS
+
+		CHECK_TICK
+
+	return new_turfs
+
+// ============================================================================
+// PLANETARY CAVE BIOMES
+// ============================================================================
+
+/datum/biome/cave/planet_asteroid
+	open_turf_types = list(/turf/open/misc/asteroid = 1)
+	closed_turf_types = list(/turf/closed/mineral/random = 1)
+	flora_spawn_chance = 8
+	mob_spawn_chance = 0
+	feature_spawn_chance = 2
+	flora_spawn_list = list(
+		/obj/structure/flora/rock = 4,
+		/obj/structure/flora/rock/pile = 3,
+	)
+
+/datum/biome/cave/planet_ice
+	open_turf_types = list(/turf/open/misc/asteroid/snow/icemoon = 1)
+	closed_turf_types = list(/turf/closed/mineral/random = 1)
+	flora_spawn_chance = 10
+	mob_spawn_chance = 0
+	feature_spawn_chance = 3
+	flora_spawn_list = list(
+		/obj/structure/flora/rock = 3,
+		/obj/structure/flora/rock/pile = 3,
+		/obj/structure/flora/grass/both = 2,
+	)
+
+/datum/biome/cave/planet_lava
+	open_turf_types = list(/turf/open/misc/asteroid/basalt/lava_land_surface = 1)
+	closed_turf_types = list(/turf/closed/mineral/random = 1)
+	flora_spawn_chance = 12
+	mob_spawn_chance = 0
+	feature_spawn_chance = 5
+	flora_spawn_list = list(
+		/obj/structure/flora/rock = 5,
+		/obj/structure/flora/rock/pile = 4,
+	)
+
+/datum/biome/cave/planet_jungle
+	open_turf_types = list(/turf/open/misc/dirt = 1)
+	closed_turf_types = list(/turf/closed/mineral/random = 1)
+	flora_spawn_chance = 25
+	mob_spawn_chance = 0
+	feature_spawn_chance = 8
+	flora_spawn_list = list(
+		/obj/structure/flora/bush = 5,
+		/obj/structure/flora/grass/jungle = 4,
+		/obj/structure/flora/grass/jungle/b = 4,
+		/obj/structure/flora/rock = 2,
+	)
+
+/datum/biome/cave/planet_desert
+	open_turf_types = list(/turf/open/misc/beach/sand = 1)
+	closed_turf_types = list(/turf/closed/mineral/random = 1)
+	flora_spawn_chance = 5
+	mob_spawn_chance = 0
+	feature_spawn_chance = 2
+	flora_spawn_list = list(
+		/obj/structure/flora/rock = 4,
+		/obj/structure/flora/rock/pile = 3,
+	)
+
+/datum/biome/cave/planet_beach
+	open_turf_types = list(/turf/open/misc/beach/sand = 1)
+	closed_turf_types = list(/turf/closed/mineral/random = 1)
+	flora_spawn_chance = 8
+	mob_spawn_chance = 0
+	feature_spawn_chance = 3
+	flora_spawn_list = list(
+		/obj/structure/flora/rock = 4,
+		/obj/structure/flora/rock/pile = 2,
+		/obj/structure/flora/grass/both = 2,
+	)
+
+/datum/biome/cave/planet_grassland
+	open_turf_types = list(/turf/open/misc/dirt = 1)
+	closed_turf_types = list(/turf/closed/mineral/random = 1)
+	flora_spawn_chance = 15
+	mob_spawn_chance = 0
+	feature_spawn_chance = 4
+	flora_spawn_list = list(
+		/obj/structure/flora/grass/jungle = 3,
+		/obj/structure/flora/grass/jungle/b = 3,
+		/obj/structure/flora/rock = 3,
+		/obj/structure/flora/bush = 2,
+	)
+
+/datum/biome/cave/planet_wasteland
+	open_turf_types = list(/turf/open/misc/asteroid = 1)
+	closed_turf_types = list(/turf/closed/mineral/random = 1)
+	flora_spawn_chance = 20
+	mob_spawn_chance = 0
+	feature_spawn_chance = 10
+	flora_spawn_list = list(
+		/obj/structure/flora/rock = 3,
+		/obj/structure/flora/rock/pile = 2,
+		/obj/structure/girder/displaced = 2,
+	)
+

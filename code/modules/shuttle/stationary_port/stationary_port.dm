@@ -18,6 +18,8 @@
 	var/is_adjusting_now = FALSE
 	/// The docking ticket of the ship docking to this port (prevents double-booking)
 	var/datum/docking_ticket/current_docking_ticket
+	/// Reference to the planet generator creating this planet (used to check if generation is complete)
+	var/datum/map_generator/planet_generator/planet_generator
 	// Our initial roundstart coordinates
 	var/initial_x = -1
 	var/initial_y = -1

@@ -9,6 +9,11 @@
 		return DOCKING_SUCCESS
 
 	if(!force)
+		// Check if planet is still generating
+		if(new_dock.planet_generator?.generating)
+			remove_ripples()
+			return DOCKING_BLOCKED
+
 		// Validate docking ticket if we have one
 		if(current_ticket)
 			if(!validate_docking_ticket())
