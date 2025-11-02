@@ -118,6 +118,10 @@
 	// Clear docking ticket on successful completion
 	clear_docking_ticket()
 
+	// Clear the stationary port's ticket reservation
+	if(new_dock.current_docking_ticket)
+		qdel(new_dock.current_docking_ticket)
+
 	return DOCKING_SUCCESS
 
 /obj/docking_port/mobile/proc/preflight_check(list/old_turfs, list/new_turfs, list/areas_to_move, list/underlying_areas, rotation)

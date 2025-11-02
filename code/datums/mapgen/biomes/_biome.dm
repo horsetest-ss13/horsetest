@@ -89,7 +89,7 @@
 		new flora(target_turf)
 		return TRUE
 
-	if(features_allowed && prob(feature_density))
+	if(features_allowed && length(feature_types) && prob(feature_density))
 		var/can_spawn = TRUE
 
 		var/atom/picked_feature = pick(feature_types)
@@ -104,6 +104,10 @@
 			return TRUE
 
 	if(fauna_allowed && length(fauna_types) && prob(fauna_density))
+		// Check that fauna_types list is properly initialized (not empty after expansion)
+		if(!length(fauna_types))
+			return FALSE
+
 		var/mob/picked_mob = pick(fauna_types)
 
 		// prevents tendrils spawning in each other's collapse range

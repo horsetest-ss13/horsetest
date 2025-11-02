@@ -88,7 +88,12 @@
 
 		var/docked_station_name = null
 		if(controlled_shuttle.docked_at)
-			docked_station_name = controlled_shuttle.docked_at.station_name
+			// Check if it's a station (has station_name) or other object (use name)
+			if(istype(controlled_shuttle.docked_at, /datum/orbital_object/station))
+				var/datum/orbital_object/station/station = controlled_shuttle.docked_at
+				docked_station_name = station.station_name
+			else
+				docked_station_name = controlled_shuttle.docked_at.name
 		else if(is_docked && current_dock)
 			docked_station_name = current_dock.name
 		data["dockedStation"] = docked_station_name

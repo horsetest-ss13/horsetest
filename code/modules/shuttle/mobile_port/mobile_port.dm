@@ -251,6 +251,12 @@
 	if(stationary_dock.override_can_dock_checks)
 		return SHUTTLE_CAN_DOCK
 
+	// If the dock has adjust_dock_for_landing enabled, adjust it to fit this shuttle
+	if(stationary_dock.adjust_dock_for_landing)
+		if(stationary_dock.is_adjusting_now)
+			return "Port is adjusting for another shuttle"
+		stationary_dock.adjust_dock_to_shuttle(src)
+
 	if(dwidth > stationary_dock.dwidth)
 		return SHUTTLE_DWIDTH_TOO_LARGE
 

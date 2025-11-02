@@ -114,7 +114,7 @@
 
 		if(valid_position)
 			used_positions += list(list("x" = x_pos, "y" = y_pos))
-			var/datum/orbital_object/planet/new_planet = new planet_type(x_pos, y_pos, "Planet [i]", planet_type, src)
+			new planet_type(x_pos, y_pos, "Planet [i]", planet_type, src)
 			// Planet is automatically added to this system via its New() method
 			log_world("Generated planet: Planet [i] ([planet_type]) at ([x_pos], [y_pos]) in system [system_name]")
 

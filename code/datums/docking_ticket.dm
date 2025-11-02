@@ -21,6 +21,24 @@
 	if(_docking_error)
 		docking_error = _docking_error
 
+	// Reserve the port if no error and port exists
+	if(!docking_error && target_port)
+		if(target_port.current_docking_ticket)
+			docking_error = "[target_port] is already reserved for docking!"
+		else
+			target_port.current_docking_ticket = src
+
+/datum/docking_ticket/Destroy(force)
+	// Release port reservation
+	if(target_port)
+		target_port.current_docking_ticket = null
+		target_port = null
+	if(issuer)
+		issuer = null
+	if(target)
+		target = null
+	return ..()
+
 /**
  * Check if this ticket is still valid
  * Returns TRUE if valid, FALSE if expired or invalidated
