@@ -321,12 +321,8 @@
 	planet_level = null
 
 	log_world("PLANET UNLOAD: [name] cleanup complete - deleting planet object")
-
+	///FOR TESTING ONLY
+	src.star_system.generate_planets(1)
 	// Delete the planet's supercruise object itself (like PentestSS13 does)
 	// This removes it from the overmap and frees all references
 	qdel(src)
-
-/**
- * Post-undock hook for shuttles leaving the planet.
- * Triggers the delayed cleanup check.
- */
