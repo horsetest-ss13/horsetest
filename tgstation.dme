@@ -6317,7 +6317,6 @@
 #include "code\modules\supercruise\orbital_shuttle.dm"
 #include "code\modules\supercruise\orbital_station.dm"
 #include "code\modules\supercruise\overmap_star_system.dm"
-#include "code\modules\supercruise\planet_generation_admin.dm"
 #include "code\modules\supercruise\planets.dm"
 #include "code\modules\supercruise\supercruise_console.dm"
 #include "code\modules\surgery\amputation.dm"

@@ -26,7 +26,7 @@
 	mob_spawn_list = list(
 		/mob/living/basic/mining/watcher = 30,
 		/mob/living/basic/mining/watcher = 30,
-		/mob/living/basic/spider = 20,
+		/mob/living/basic/spider/giant = 20,
 		/mob/living/basic/mining/watcher = 30,
 		/mob/living/basic/mining/goliath = 50,
 	)
@@ -83,7 +83,7 @@
 	mob_spawn_list = list(
 		/mob/living/basic/mining/watcher = 30,
 		/mob/living/basic/mining/watcher = 30,
-		/mob/living/basic/spider = 20,
+		/mob/living/basic/spider/giant = 20,
 		/mob/living/basic/mining/watcher = 30,
 	)
 
