@@ -2,7 +2,6 @@
  * # Planet Generator
  *
  * Basic planet generation system integrated with the supercruise system.
- * Currently generates simple flat planets with a single biome.
  */
 
 /datum/map_generator/planet_generator
@@ -1147,9 +1146,6 @@
 /datum/map_generator/planet_generator/wasteland/New()
 	. = ..()
 
-/datum/map_generator/planet_generator/wasteland/New()
-	. = ..()
-
 	// Surface biome table from PentestSS13 - toxic waste with craters, metal ruins, tar beds
 	biome_table = list(
 		BIOME_COLDEST = list(
@@ -1280,6 +1276,23 @@
 			CHECK_TICK
 
 	log_world("ATMOSPHERE: Complete! Applied atmosphere to [processed] turfs on [planet_name]")
+
+	// Activate atmospheric processing for all turfs so gases process and overlays render
+	log_world("ATMOSPHERE: Activating atmospheric processing for [planet_name]...")
+	var/activated = 0
+	for(var/turf/open/target_turf as anything in turfs)
+		if(!istype(target_turf) || !target_turf.air)
+			continue
+
+		// Add to active turfs list so atmospherics processes them
+		SSair.add_to_active(target_turf, TRUE)
+		activated++
+
+		if(activated % 500 == 0)
+			log_world("ATMOSPHERE: Activated [activated]/[processed] turfs...")
+			CHECK_TICK
+
+	log_world("ATMOSPHERE: Activated atmospheric processing for [activated] turfs on [planet_name]")
 
 // ============================================================================
 // AREAS
