@@ -1279,7 +1279,6 @@
 
 		// Periodic logging and tick checking
 		if(processed % 500 == 0)
-			log_world("ATMOSPHERE: Processed [processed]/[total_turfs] turfs...")
 			CHECK_TICK
 
 	log_world("ATMOSPHERE: Complete! Applied atmosphere to [processed] turfs on [planet_name]")
