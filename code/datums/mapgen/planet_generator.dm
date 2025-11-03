@@ -168,6 +168,9 @@
 	// Generate the terrain using parent implementation
 	generate_terrain(turfs_to_generate, null)
 
+	// Override atmospheres on all generated turfs to use breathable air
+	override_turf_atmospheres(turfs_to_generate)
+
 	// Populate with flora/fauna using parent implementation
 	populate_terrain(turfs_to_generate, null)
 
@@ -1230,8 +1233,39 @@
 // This is the same as OPENTURF_DEFAULT_ATMOS (breathable air)
 #define PLANET_DEFAULT_ATMOS "o2=22;n2=82;TEMP=293.15"
 
-// No need for apply_atmosphere proc - turfs handle their own atmospherics via initial_gas_mix
-// The planetary_atmos flag is set directly on the turf types used in biomes
+/**
+ * Overrides the atmosphere on all generated turfs to use breathable air
+ * This replaces any hazardous atmospheres (like LAVALAND_ATMOS with plasma)
+ * with a safe, breathable oxygen/nitrogen mix
+ *
+ * Arguments:
+ * * turfs_to_process - List of turfs to override atmospheres for
+ */
+/datum/map_generator/planet_generator/proc/override_turf_atmospheres(list/turf/turfs_to_process)
+	if(!length(turfs_to_process))
+		return
+
+	var/turfs_modified = 0
+
+	for(var/turf/open/target_turf as anything in turfs_to_process)
+		if(!istype(target_turf))
+			continue
+
+		// Only override turfs that have planetary atmospheres
+		if(!target_turf.planetary_atmos)
+			continue
+
+		// Replace the initial_gas_mix with breathable air
+		target_turf.initial_gas_mix = PLANET_DEFAULT_ATMOS
+
+		// Recreate the gas mixture with the new atmosphere
+		if(target_turf.air)
+			target_turf.air = target_turf.create_gas_mixture()
+
+		turfs_modified++
+
+	if(turfs_modified > 0)
+		log_world("Overrode atmosphere on [turfs_modified] planetary turfs to breathable air")
 
 // ============================================================================
 // AREAS
