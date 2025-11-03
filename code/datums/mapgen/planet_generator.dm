@@ -95,7 +95,7 @@
  *
  * Returns: A list containing [vlevel, list of docking_ports], or null if planet already exists
  */
-/datum/map_generator/planet_generator/proc/generate_planet_level(planet_name = "Planet", planet_size = 100, baseturf = /turf/open/space/basic, datum/map_zone/mapzone = null, datum/atmosphere/atmosphere = null)
+/datum/map_generator/planet_generator/proc/generate_planet_level(planet_name = "Planet", planet_size = 100, baseturf = /turf/open/space/basic, datum/map_zone/mapzone = null)
 	// Set generating flag to prevent docking during planet generation
 	generating = TRUE
 
@@ -172,10 +172,6 @@
 
 	// Smooth all generated turfs to fix borders and transitions
 	smooth_generated_turfs(turfs_to_generate, vlevel.z_value)
-
-	// Apply atmospheric conditions if provided
-	if(atmosphere)
-		apply_atmosphere(turfs_to_generate, atmosphere, planet_name)
 
 	log_world("Planet [planet_name] generation complete with [length(docking_ports)] docking ports!")
 
@@ -1229,74 +1225,12 @@
 // ATMOSPHERIC PROCESSING
 // ============================================================================
 
-/**
- * Applies atmospheric conditions to planet turfs
- * Sets up planetary atmosphere the same way normal lavaland/ice planet turfs work:
- * - Sets initial_gas_mix for the turf (used for planetary atmosphere restoration)
- * - Sets planetary_atmos flag so turfs share with planetary atmosphere
- * - Recreates the gas mixture from the initial_gas_mix
- * - Queues turfs for adjacent calculation (non-active, like normal map init)
- *
- * Arguments:
- * * turfs - List of turfs to apply atmosphere to
- * * atmosphere - The atmosphere datum to apply
- * * planet_name - Name of planet for logging
- */
-/datum/map_generator/planet_generator/proc/apply_atmosphere(list/turf/turfs, datum/atmosphere/atmosphere, planet_name = "Planet")
-	if(!atmosphere)
-		log_world("ATMOSPHERE: No atmosphere provided for [planet_name]")
-		return
+// Define a simple breathable atmosphere for all generated planets
+// This is the same as OPENTURF_DEFAULT_ATMOS (breathable air)
+#define PLANET_DEFAULT_ATMOS "o2=22;n2=82;TEMP=293.15"
 
-	log_world("ATMOSPHERE: Applying [atmosphere.id] atmosphere to [planet_name]...")
-
-	// Generate the gas string for this atmosphere
-	if(!atmosphere.gas_string)
-		atmosphere.generate_gas_string()
-
-	var/total_turfs = length(turfs)
-	var/processed = 0
-
-	for(var/turf/open/target_turf as anything in turfs)
-		if(!istype(target_turf))
-			continue
-
-		// Skip if turf doesn't have air (like walls)
-		if(!target_turf.air)
-			continue
-
-		// Set the initial_gas_mix for this turf - this is what normal lavaland/ice planet turfs use
-		// The turf will use this to restore its atmosphere over time via planetary_atmos system
-		target_turf.initial_gas_mix = atmosphere.gas_string
-
-		// Mark as planetary atmosphere - turf will share with SSair.planetary[initial_gas_mix]
-		target_turf.planetary_atmos = TRUE
-
-		// Recreate the air mixture from the new initial_gas_mix
-		// This is what create_gas_mixture() does - parse initial_gas_mix into actual gas
-		target_turf.air = target_turf.create_gas_mixture()
-
-		processed++
-
-		// Periodic logging and tick checking
-		if(processed % 500 == 0)
-			CHECK_TICK
-
-	log_world("ATMOSPHERE: Complete! Applied atmosphere to [processed] turfs on [planet_name]")
-
-	// Queue turfs for adjacent calculation using NORMAL_TURF (not MAKE_ACTIVE)
-	// This matches how normal map initialization works - only turfs with differences become active
-	log_world("ATMOSPHERE: Queueing [processed] turfs for atmospheric calculation...")
-	for(var/turf/open/target_turf as anything in turfs)
-		if(!istype(target_turf) || !target_turf.air)
-			continue
-		// Use NORMAL_TURF instead of MAKE_ACTIVE - let the system decide if turfs should be active
-		// based on atmospheric differences (same as normal lavaland)
-		CALCULATE_ADJACENT_TURFS(target_turf, NORMAL_TURF)
-
-	// Process the rebuild queue immediately
-	log_world("ATMOSPHERE: Processing atmospheric rebuild queue...")
-	SSair.process_adjacent_rebuild(init = TRUE)
-	log_world("ATMOSPHERE: Atmospheric system initialized for [planet_name]")
+// No need for apply_atmosphere proc - turfs handle their own atmospherics via initial_gas_mix
+// The planetary_atmos flag is set directly on the turf types used in biomes
 
 // ============================================================================
 // AREAS

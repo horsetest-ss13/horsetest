@@ -2,7 +2,6 @@
 	supercruise_color = "#8B7355"  // Brown
 	description = "A barren rocky world with a thin, cold atmosphere and scattered rocks."
 	map_generator_type = /datum/map_generator/planet_generator/rocky
-	atmosphere_type = /datum/atmosphere/rocky
 	planet_size = 100
 	baseturf_type = /turf/open/misc/asteroid
 
@@ -10,7 +9,6 @@
 	supercruise_color = "#B0E0E6"  // Light blue
 	description = "A frozen ice world with an extremely cold atmosphere and ice formations."
 	map_generator_type = /datum/map_generator/planet_generator/ice
-	atmosphere_type = /datum/atmosphere/icemoon
 	planet_size = 100
 	baseturf_type = /turf/open/space/basic
 
@@ -18,14 +16,12 @@
 	supercruise_color = "#FFA07A"  // Light orange
 	description = "A massive gas giant. Landing is impossible."
 	landable = FALSE
-	atmosphere_type = null  // Can't land here
 	map_generator_type = null // No landing
 
 /datum/orbital_object/planet/lava
 	supercruise_color = "#FF4500"  // Red-orange
 	description = "A volcanic hellscape with extreme heat, toxic fumes, and flowing lava."
 	map_generator_type = /datum/map_generator/planet_generator/lava
-	atmosphere_type = /datum/atmosphere/lavaland
 	planet_size = 100
 	baseturf_type = /turf/open/lava/smooth
 
@@ -33,7 +29,6 @@
 	supercruise_color = "#4682B4"  // Steel blue
 	description = "A world covered in vast oceans with sandy beaches and a breathable atmosphere."
 	map_generator_type = /datum/map_generator/planet_generator/beach
-	atmosphere_type = /datum/atmosphere/breathable
 	planet_size = 100
 	baseturf_type = /turf/open/space/basic
 
@@ -41,7 +36,6 @@
 	supercruise_color = "#DEB887"  // Burlywood
 	description = "An arid desert planet with scorching heat, dry air, and endless sand dunes."
 	map_generator_type = /datum/map_generator/planet_generator/desert
-	atmosphere_type = /datum/atmosphere/desert
 	planet_size = 100
 	baseturf_type = /turf/open/misc/asteroid
 
@@ -49,7 +43,6 @@
 	supercruise_color = "#228B22"  // Forest green
 	description = "A lush green world with dense jungle vegetation, exotic flora, and humid air."
 	map_generator_type = /datum/map_generator/planet_generator/jungle
-	atmosphere_type = /datum/atmosphere/jungle
 	planet_size = 100
 	baseturf_type = /turf/open/misc/grass
 
@@ -57,6 +50,5 @@
 	supercruise_color = "#9B59B6"  // Purple
 	description = "A toxic wasteland filled with hazardous gases, radiation, and industrial ruins."
 	map_generator_type = /datum/map_generator/planet_generator/wasteland
-	atmosphere_type = /datum/atmosphere/toxic
 	planet_size = 100
 	baseturf_type = /turf/open/misc/asteroid

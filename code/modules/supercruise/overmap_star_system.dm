@@ -114,10 +114,24 @@
 
 		if(valid_position)
 			used_positions += list(list("x" = x_pos, "y" = y_pos))
-			new planet_type(x_pos, y_pos, "Planet [i]", planet_type, src)
+			var/planet_name = gen_planet_name()
+			new planet_type(x_pos, y_pos, planet_name, planet_type, src)
 			// Planet is automatically added to this system via its New() method
-			log_world("Generated planet: Planet [i] ([planet_type]) at ([x_pos], [y_pos]) in system [system_name]")
+			log_world("Generated planet: [planet_name] ([planet_type]) at ([x_pos], [y_pos]) in system [system_name]")
 
+/datum/overmap_star_system/proc/gen_planet_name()
+	. = ""
+	switch(rand(1,10))
+		if(1 to 4)
+			for(var/i in 1 to rand(2,3))
+				. += capitalize(pick(GLOB.alphabet))
+			. += "-"
+			. += "[pick(rand(1,999))]"
+		if(4 to 9)
+			. += "[pick(GLOB.planet_names)] \Roman[rand(1,9)]"
+		if(10)
+			. += "[pick(GLOB.planet_prefixes)] [pick(GLOB.planet_names)]"
+	return .
 /**
  * Get all objects of a specific type in this system
  */
