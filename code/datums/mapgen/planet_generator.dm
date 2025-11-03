@@ -1264,9 +1264,6 @@
 
 		turfs_modified++
 
-	if(turfs_modified > 0)
-		log_world("Overrode atmosphere on [turfs_modified] planetary turfs to breathable air")
-
 // ============================================================================
 // AREAS
 // ============================================================================
