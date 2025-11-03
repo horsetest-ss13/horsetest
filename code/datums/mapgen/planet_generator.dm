@@ -199,8 +199,8 @@
 
 	// Landing zone dimensions - using adjust_dock_for_landing to auto-fit shuttles
 	// These define the maximum bounds that docks can adjust within
-	#define LANDING_ZONE_WIDTH 30   // Max width for landing zones
-	#define LANDING_ZONE_HEIGHT 30  // Max height for landing zones
+	#define LANDING_ZONE_WIDTH 20   // Max width for landing zones
+	#define LANDING_ZONE_HEIGHT 20  // Max height for landing zones
 	#define LANDING_ZONE_PADDING 5
 	#define SHUTTLE_BOTTOM_CLEARANCE 5  // Tiles from bottom of map to bottom of shuttle
 
@@ -1231,7 +1231,11 @@
 
 /**
  * Applies atmospheric conditions to planet turfs
- * Sets temperature, pressure, and gas mixture based on atmosphere datum
+ * Sets up planetary atmosphere the same way normal lavaland/ice planet turfs work:
+ * - Sets initial_gas_mix for the turf (used for planetary atmosphere restoration)
+ * - Sets planetary_atmos flag so turfs share with planetary atmosphere
+ * - Recreates the gas mixture from the initial_gas_mix
+ * - Queues turfs for adjacent calculation (non-active, like normal map init)
  *
  * Arguments:
  * * turfs - List of turfs to apply atmosphere to
@@ -1260,13 +1264,16 @@
 		if(!target_turf.air)
 			continue
 
-		// Parse and apply the gas mixture from the atmosphere's gas_string
-		var/datum/gas_mixture/atmos_mix = SSair.parse_gas_string(atmosphere.gas_string, /datum/gas_mixture/turf)
-		if(atmos_mix)
-			target_turf.air.copy_from(atmos_mix)
+		// Set the initial_gas_mix for this turf - this is what normal lavaland/ice planet turfs use
+		// The turf will use this to restore its atmosphere over time via planetary_atmos system
+		target_turf.initial_gas_mix = atmosphere.gas_string
 
-		// Mark as planetary atmosphere so it doesn't get removed easily
+		// Mark as planetary atmosphere - turf will share with SSair.planetary[initial_gas_mix]
 		target_turf.planetary_atmos = TRUE
+
+		// Recreate the air mixture from the new initial_gas_mix
+		// This is what create_gas_mixture() does - parse initial_gas_mix into actual gas
+		target_turf.air = target_turf.create_gas_mixture()
 
 		processed++
 
@@ -1277,22 +1284,20 @@
 
 	log_world("ATMOSPHERE: Complete! Applied atmosphere to [processed] turfs on [planet_name]")
 
-	// Activate atmospheric processing for all turfs so gases process and overlays render
-	log_world("ATMOSPHERE: Activating atmospheric processing for [planet_name]...")
-	var/activated = 0
+	// Queue turfs for adjacent calculation using NORMAL_TURF (not MAKE_ACTIVE)
+	// This matches how normal map initialization works - only turfs with differences become active
+	log_world("ATMOSPHERE: Queueing [processed] turfs for atmospheric calculation...")
 	for(var/turf/open/target_turf as anything in turfs)
 		if(!istype(target_turf) || !target_turf.air)
 			continue
+		// Use NORMAL_TURF instead of MAKE_ACTIVE - let the system decide if turfs should be active
+		// based on atmospheric differences (same as normal lavaland)
+		CALCULATE_ADJACENT_TURFS(target_turf, NORMAL_TURF)
 
-		// Add to active turfs list so atmospherics processes them
-		SSair.add_to_active(target_turf, TRUE)
-		activated++
-
-		if(activated % 500 == 0)
-			log_world("ATMOSPHERE: Activated [activated]/[processed] turfs...")
-			CHECK_TICK
-
-	log_world("ATMOSPHERE: Activated atmospheric processing for [activated] turfs on [planet_name]")
+	// Process the rebuild queue immediately
+	log_world("ATMOSPHERE: Processing atmospheric rebuild queue...")
+	SSair.process_adjacent_rebuild(init = TRUE)
+	log_world("ATMOSPHERE: Atmospheric system initialized for [planet_name]")
 
 // ============================================================================
 // AREAS
