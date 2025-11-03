@@ -70,9 +70,10 @@
 	heat_seed = rand(0, 50000)
 	humidity_seed = rand(0, 50000)
 
-	// Initialize areas
-	primary_area = GLOB.areas_by_type[primary_area_type] || new primary_area_type
-	cave_area = GLOB.areas_by_type[cave_area_type] || new cave_area_type
+	// Create NEW area instances for this planet (don't reuse global instances)
+	// Each planet needs its own area instance to avoid conflicts when multiple planets exist
+	primary_area = new primary_area_type
+	cave_area = new cave_area_type
 
 	// Generate cellular automata for caves if mountain_height < 1
 	if(mountain_height < 1)
