@@ -2033,7 +2033,7 @@
 /turf/open/misc/asteroid/snow/airless,
 /area/centcom/syndicate_mothership)
 "wq" = (
-/obj/machinery/computer/shuttle/syndicate/recall{
+/obj/machinery/computer/supercruise{
 	dir = 8
 	},
 /turf/open/floor/carpet,
@@ -13981,3 +13981,4 @@ sU
 sU
 sU
 "}
+

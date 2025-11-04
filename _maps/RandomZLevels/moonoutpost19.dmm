@@ -1927,7 +1927,7 @@
 /turf/open/floor/iron/dark,
 /area/awaymission/moonoutpost19/arrivals)
 "mG" = (
-/obj/machinery/computer/shuttle{
+/obj/machinery/computer/supercruise{
 	dir = 4
 	},
 /turf/open/floor/mineral/titanium/blue,
@@ -73346,3 +73346,4 @@ IM
 IM
 IM
 "}
+

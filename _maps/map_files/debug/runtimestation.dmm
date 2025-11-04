@@ -1961,7 +1961,7 @@
 "EM" = (
 /obj/machinery/power/apc/auto_name/directional/north,
 /obj/structure/cable,
-/obj/machinery/computer/shuttle/mining,
+/obj/machinery/computer/supercruise,
 /obj/machinery/airalarm/directional/east,
 /obj/effect/mapping_helpers/airalarm/unlocked,
 /turf/open/floor/iron,
@@ -11125,3 +11125,4 @@ aa
 aa
 aa
 "}
+

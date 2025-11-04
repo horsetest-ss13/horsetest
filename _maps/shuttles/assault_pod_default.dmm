@@ -26,7 +26,7 @@
 /turf/open/floor/plating,
 /area/shuttle/assault_pod)
 "h" = (
-/obj/machinery/computer/shuttle/syndicate/drop_pod,
+/obj/machinery/computer/supercruise,
 /turf/closed/wall/mineral/plastitanium,
 /area/shuttle/assault_pod)
 "p" = (
@@ -132,3 +132,4 @@ d
 b
 V
 "}
+

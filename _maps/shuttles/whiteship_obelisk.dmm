@@ -6,7 +6,7 @@
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/abandoned/engine)
 "bD" = (
-/obj/machinery/computer/shuttle/white_ship/bridge{
+/obj/machinery/computer/supercruise{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -1148,3 +1148,4 @@ qA
 Bf
 Bf
 "}
+

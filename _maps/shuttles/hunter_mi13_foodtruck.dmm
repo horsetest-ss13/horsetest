@@ -342,7 +342,7 @@
 /area/shuttle/hunter/mi13_foodtruck)
 "pQ" = (
 /obj/structure/cable/layer1,
-/obj/machinery/computer/shuttle/hunter{
+/obj/machinery/computer/supercruise{
 	req_access = list("syndicate")
 	},
 /turf/open/floor/circuit/red/off,
@@ -988,3 +988,4 @@ ku
 Pq
 Pq
 "}
+

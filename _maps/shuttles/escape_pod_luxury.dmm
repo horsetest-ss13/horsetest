@@ -3,7 +3,7 @@
 /obj/structure/chair/comfy/shuttle{
 	dir = 1
 	},
-/obj/machinery/computer/shuttle/pod{
+/obj/machinery/computer/supercruise{
 	pixel_x = -32
 	},
 /obj/machinery/status_display/evac/directional/east,
@@ -66,3 +66,4 @@ Q
 B
 Z
 "}
+

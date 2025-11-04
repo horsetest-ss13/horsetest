@@ -403,7 +403,7 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/pirate)
 "vj" = (
-/obj/machinery/computer/shuttle/pirate{
+/obj/machinery/computer/supercruise{
 	dir = 8
 	},
 /turf/open/misc/dirt/station,
@@ -1441,3 +1441,4 @@ lt
 lt
 lt
 "}
+

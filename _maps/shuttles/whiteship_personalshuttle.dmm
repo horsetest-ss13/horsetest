@@ -488,7 +488,7 @@
 /turf/open/floor/mineral/titanium,
 /area/shuttle/abandoned/engine)
 "Sk" = (
-/obj/machinery/computer/shuttle/white_ship/bridge{
+/obj/machinery/computer/supercruise{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -672,3 +672,4 @@ cM
 cM
 cM
 "}
+

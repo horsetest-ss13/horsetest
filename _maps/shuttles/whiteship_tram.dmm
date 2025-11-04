@@ -1268,7 +1268,7 @@
 /turf/open/floor/iron/smooth_large,
 /area/shuttle/abandoned/engine)
 "OL" = (
-/obj/machinery/computer/shuttle/white_ship/bridge{
+/obj/machinery/computer/supercruise{
 	dir = 8
 	},
 /obj/effect/turf_decal/stripes/white/line{
@@ -1833,3 +1833,4 @@ aq
 aq
 YI
 "}
+

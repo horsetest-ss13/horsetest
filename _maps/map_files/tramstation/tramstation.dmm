@@ -11783,7 +11783,7 @@
 /turf/open/floor/glass/reinforced,
 /area/station/ai_monitored/turret_protected/aisat/hallway)
 "cWl" = (
-/obj/machinery/computer/shuttle/mining{
+/obj/machinery/computer/supercruise{
 	dir = 1
 	},
 /obj/structure/window/reinforced/spawner/directional/east,
@@ -13417,7 +13417,7 @@
 /turf/open/floor/iron/showroomfloor,
 /area/station/security/warden)
 "dAl" = (
-/obj/machinery/computer/shuttle/mining{
+/obj/machinery/computer/supercruise{
 	dir = 8;
 	req_access = null
 	},
@@ -34786,7 +34786,7 @@
 /turf/open/floor/plating,
 /area/station/maintenance/starboard/lesser)
 "lco" = (
-/obj/machinery/computer/shuttle/mining/common{
+/obj/machinery/computer/supercruise{
 	dir = 8
 	},
 /obj/effect/turf_decal/stripes{
@@ -46186,7 +46186,7 @@
 /turf/open/floor/iron/cafeteria,
 /area/station/security/prison/mess)
 "pkP" = (
-/obj/machinery/computer/shuttle/labor{
+/obj/machinery/computer/supercruise{
 	dir = 1
 	},
 /obj/structure/window/reinforced/spawner/directional/west,
@@ -51643,7 +51643,7 @@
 /turf/open/floor/wood,
 /area/station/command/heads_quarters/captain)
 "rdo" = (
-/obj/machinery/computer/shuttle/labor,
+/obj/machinery/computer/supercruise,
 /obj/effect/turf_decal/trimline/red/filled/line{
 	dir = 9
 	},
@@ -70065,7 +70065,7 @@
 /turf/open/floor/iron/dark,
 /area/station/command/heads_quarters/ce)
 "xyk" = (
-/obj/machinery/computer/shuttle/mining,
+/obj/machinery/computer/supercruise,
 /obj/effect/turf_decal/trimline/yellow/filled/line{
 	dir = 1
 	},
@@ -203231,3 +203231,4 @@ pMW
 pMW
 pMW
 "}
+

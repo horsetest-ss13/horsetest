@@ -17,7 +17,7 @@
 	},
 /obj/item/radio/intercom/directional/east,
 /obj/machinery/light/small/directional/west,
-/obj/machinery/computer/shuttle/pod{
+/obj/machinery/computer/supercruise{
 	pixel_x = -32
 	},
 /obj/machinery/status_display/evac/directional/north,
@@ -43,3 +43,4 @@ B
 B
 Z
 "}
+

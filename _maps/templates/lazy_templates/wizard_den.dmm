@@ -181,7 +181,7 @@
 /turf/open/floor/plastic,
 /area/centcom/wizard_station)
 "ko" = (
-/obj/machinery/computer/shuttle,
+/obj/machinery/computer/supercruise,
 /turf/open/floor/carpet/red,
 /area/centcom/wizard_station)
 "kZ" = (
@@ -2436,3 +2436,4 @@ op
 op
 op
 "}
+

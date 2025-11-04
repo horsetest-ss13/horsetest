@@ -33,7 +33,7 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/sbc_corvette)
 "ag" = (
-/obj/machinery/computer/shuttle/starfury/corvette{
+/obj/machinery/computer/supercruise{
 	dir = 8
 	},
 /obj/effect/turf_decal/stripes/red/line{
@@ -565,3 +565,4 @@ aO
 aO
 aa
 "}
+

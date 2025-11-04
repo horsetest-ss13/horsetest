@@ -2661,14 +2661,14 @@
 /turf/open/floor/iron,
 /area/centcom/central_command_areas/supplypod/loading/four)
 "md" = (
-/obj/machinery/computer/shuttle/labor,
+/obj/machinery/computer/supercruise,
 /obj/effect/turf_decal/stripes/line{
 	dir = 10
 	},
 /turf/open/floor/iron,
 /area/centcom/central_command_areas/supply)
 "me" = (
-/obj/machinery/computer/shuttle/mining,
+/obj/machinery/computer/supercruise,
 /obj/effect/turf_decal/stripes/line{
 	dir = 6
 	},
@@ -3764,14 +3764,14 @@
 /turf/open/floor/wood,
 /area/centcom/central_command_areas/courtroom)
 "rm" = (
-/obj/machinery/computer/shuttle/labor,
+/obj/machinery/computer/supercruise,
 /obj/effect/turf_decal/stripes/line{
 	dir = 10
 	},
 /turf/open/floor/iron,
 /area/centcom/central_command_areas/ferry)
 "rn" = (
-/obj/machinery/computer/shuttle/mining,
+/obj/machinery/computer/supercruise,
 /obj/effect/turf_decal/stripes/line{
 	dir = 6
 	},
@@ -4025,7 +4025,7 @@
 /turf/open/floor/iron,
 /area/centcom/tdome/arena)
 "sq" = (
-/obj/machinery/computer/shuttle/white_ship{
+/obj/machinery/computer/supercruise{
 	dir = 4
 	},
 /obj/effect/turf_decal/stripes/line{
@@ -4264,7 +4264,7 @@
 /turf/open/floor/iron,
 /area/centcom/central_command_areas/ferry)
 "to" = (
-/obj/machinery/computer/shuttle/ferry{
+/obj/machinery/computer/supercruise{
 	dir = 4
 	},
 /obj/effect/turf_decal/stripes/line{
@@ -9571,7 +9571,7 @@
 /turf/open/floor/iron,
 /area/centcom/central_command_areas/armory)
 "SX" = (
-/obj/machinery/computer/shuttle,
+/obj/machinery/computer/supercruise,
 /turf/open/floor/iron/dark/herringbone,
 /area/centcom/central_command_areas/evacuation/ship)
 "Tb" = (
@@ -76527,3 +76527,4 @@ aa
 aa
 aa
 "}
+

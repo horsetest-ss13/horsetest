@@ -56,7 +56,7 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/pirate)
 "ah" = (
-/obj/machinery/computer/shuttle/pirate,
+/obj/machinery/computer/supercruise,
 /turf/open/floor/iron/dark,
 /area/shuttle/pirate)
 "aj" = (
@@ -1150,3 +1150,4 @@ af
 af
 af
 "}
+

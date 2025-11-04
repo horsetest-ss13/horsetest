@@ -10037,7 +10037,7 @@
 /turf/open/floor/plating,
 /area/station/maintenance/starboard/lesser)
 "dCx" = (
-/obj/machinery/computer/shuttle/mining{
+/obj/machinery/computer/supercruise{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/yellow/anticorner/contrasted{
@@ -18927,7 +18927,7 @@
 /turf/open/floor/iron,
 /area/station/commons/fitness/recreation)
 "gES" = (
-/obj/machinery/computer/shuttle/labor{
+/obj/machinery/computer/supercruise{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/red/half/contrasted{
@@ -21331,7 +21331,7 @@
 /area/station/maintenance/disposal/incinerator)
 "hve" = (
 /obj/structure/cable,
-/obj/machinery/computer/shuttle/mining/common,
+/obj/machinery/computer/supercruise,
 /obj/machinery/door/firedoor,
 /obj/structure/window/reinforced/spawner/directional/north,
 /turf/open/floor/plating,
@@ -35005,7 +35005,7 @@
 /turf/open/floor/plating,
 /area/station/maintenance/aft/greater)
 "mdL" = (
-/obj/machinery/computer/shuttle/mining{
+/obj/machinery/computer/supercruise{
 	dir = 1;
 	req_access = null
 	},
@@ -136513,3 +136513,4 @@ aaa
 aaa
 aaa
 "}
+

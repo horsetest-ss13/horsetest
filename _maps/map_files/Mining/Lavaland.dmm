@@ -910,7 +910,7 @@
 /turf/open/misc/asteroid/basalt/lava_land_surface,
 /area/lavaland/surface/outdoors)
 "fA" = (
-/obj/machinery/computer/shuttle/mining{
+/obj/machinery/computer/supercruise{
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/brown/fourcorners,
@@ -5717,7 +5717,7 @@
 /turf/open/floor/iron/edge,
 /area/mine/lounge)
 "GD" = (
-/obj/machinery/computer/shuttle/labor/one_way,
+/obj/machinery/computer/supercruise,
 /turf/open/floor/iron/smooth,
 /area/mine/laborcamp)
 "GF" = (
@@ -6221,7 +6221,7 @@
 /turf/open/lava/smooth/lava_land_surface,
 /area/lavaland/surface/outdoors)
 "JA" = (
-/obj/machinery/computer/shuttle/mining/common,
+/obj/machinery/computer/supercruise,
 /obj/structure/sign/directions/evac/directional/east{
 	pixel_x = 0;
 	pixel_y = 24
@@ -74765,3 +74765,4 @@ aj
 aj
 aj
 "}
+

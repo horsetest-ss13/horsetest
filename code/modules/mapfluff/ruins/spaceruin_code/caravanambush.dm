@@ -36,22 +36,22 @@
 /obj/machinery/computer/shuttle/caravan
 
 /obj/item/circuitboard/computer/caravan
-	build_path = /obj/machinery/computer/shuttle/caravan
+	build_path = /obj/machinery/computer/supercruise
 
 /obj/item/circuitboard/computer/caravan/trade1
-	build_path = /obj/machinery/computer/shuttle/caravan/trade1
+	build_path = /obj/machinery/computer/supercruise
 
 /obj/item/circuitboard/computer/caravan/pirate
-	build_path = /obj/machinery/computer/shuttle/caravan/pirate
+	build_path = /obj/machinery/computer/supercruise
 
 /obj/item/circuitboard/computer/caravan/syndicate1
-	build_path = /obj/machinery/computer/shuttle/caravan/syndicate1
+	build_path = /obj/machinery/computer/supercruise
 
 /obj/item/circuitboard/computer/caravan/syndicate2
-	build_path = /obj/machinery/computer/shuttle/caravan/syndicate2
+	build_path = /obj/machinery/computer/supercruise
 
 /obj/item/circuitboard/computer/caravan/syndicate3
-	build_path = /obj/machinery/computer/shuttle/caravan/syndicate3
+	build_path = /obj/machinery/computer/supercruise
 
 /obj/machinery/computer/shuttle/caravan/trade1
 	name = "Small Freighter Shuttle Console"

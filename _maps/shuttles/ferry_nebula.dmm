@@ -69,7 +69,7 @@
 /area/shuttle/transport)
 "t" = (
 /obj/effect/turf_decal/bot,
-/obj/machinery/computer/shuttle/ferry/request{
+/obj/machinery/computer/supercruise{
 	dir = 4
 	},
 /turf/open/floor/iron/dark/textured,
@@ -363,3 +363,4 @@ V
 j
 i
 "}
+

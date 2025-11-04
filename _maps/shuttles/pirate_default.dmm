@@ -27,7 +27,7 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/pirate)
 "ac" = (
-/obj/machinery/computer/shuttle/pirate,
+/obj/machinery/computer/supercruise,
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/tile/red/half/contrasted,
 /turf/open/floor/iron/dark,
@@ -1292,3 +1292,4 @@ af
 af
 af
 "}
+

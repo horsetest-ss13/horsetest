@@ -693,7 +693,7 @@
 /obj/effect/turf_decal/tile/blue/anticorner/contrasted{
 	dir = 1
 	},
-/obj/machinery/computer/shuttle/white_ship/bridge{
+/obj/machinery/computer/supercruise{
 	dir = 8
 	},
 /turf/open/floor/iron/dark,
@@ -2609,3 +2609,4 @@ bD
 cW
 aa
 "}
+

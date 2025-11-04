@@ -412,7 +412,7 @@
 /turf/open/floor/iron/airless,
 /area/shuttle/abandoned)
 "OT" = (
-/obj/machinery/computer/shuttle/white_ship/bridge{
+/obj/machinery/computer/supercruise{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -828,3 +828,4 @@ aa
 aa
 aa
 "}
+

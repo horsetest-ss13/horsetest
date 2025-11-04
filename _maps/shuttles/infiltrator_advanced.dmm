@@ -45,7 +45,7 @@
 /turf/open/floor/pod/dark,
 /area/shuttle/syndicate/armory)
 "aj" = (
-/obj/machinery/computer/shuttle/syndicate,
+/obj/machinery/computer/supercruise,
 /obj/effect/turf_decal/bot,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/syndicate/bridge)
@@ -2594,3 +2594,4 @@ ad
 ad
 ad
 "}
+

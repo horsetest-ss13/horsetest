@@ -96,7 +96,7 @@
 /turf/open/floor/plating/airless,
 /area/shuttle/transport)
 "q" = (
-/obj/machinery/computer/shuttle/ferry/request{
+/obj/machinery/computer/supercruise{
 	dir = 4
 	},
 /obj/effect/turf_decal/bot,
@@ -265,3 +265,4 @@ t
 e
 d
 "}
+

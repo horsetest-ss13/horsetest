@@ -6266,7 +6266,7 @@
 /obj/effect/turf_decal/stripes/line{
 	dir = 4
 	},
-/obj/machinery/computer/shuttle/snowdin/mining{
+/obj/machinery/computer/supercruise{
 	dir = 8;
 	name = "Excavation Elevator Console";
 	possible_destinations = "snowdin_excavation_top;snowdin_excavation_down";
@@ -6301,7 +6301,7 @@
 /obj/effect/turf_decal/stripes/white/line{
 	dir = 1
 	},
-/obj/machinery/computer/shuttle/snowdin/mining{
+/obj/machinery/computer/supercruise{
 	dir = 8;
 	name = "Excavation Elevator Console";
 	possible_destinations = "snowdin_excavation_top;snowdin_excavation_down";
@@ -8021,7 +8021,7 @@
 /turf/closed/mineral/snowmountain/cavern,
 /area/awaymission/snowdin/cave/cavern)
 "FV" = (
-/obj/machinery/computer/shuttle/snowdin/mining{
+/obj/machinery/computer/supercruise{
 	dir = 8
 	},
 /obj/effect/turf_decal/stripes/line{
@@ -8919,7 +8919,7 @@
 /turf/open/floor/plating,
 /area/awaymission/snowdin/post/mining_main)
 "KO" = (
-/obj/machinery/computer/shuttle/snowdin/mining{
+/obj/machinery/computer/supercruise{
 	dir = 8
 	},
 /obj/effect/turf_decal/stripes/line{
@@ -77139,3 +77139,4 @@ ad
 ad
 ad
 "}
+

@@ -116,7 +116,7 @@
 /turf/open/floor/plating/airless,
 /area/ruin/space/has_grav/powered/mechtransport)
 "mU" = (
-/obj/machinery/computer/shuttle{
+/obj/machinery/computer/supercruise{
 	dir = 8
 	},
 /turf/open/floor/mineral/titanium/blue/airless,
@@ -596,3 +596,4 @@ is
 is
 is
 "}
+

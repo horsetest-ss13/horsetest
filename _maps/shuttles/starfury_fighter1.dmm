@@ -99,7 +99,7 @@
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/sbc_fighter1)
 "Q" = (
-/obj/machinery/computer/shuttle/starfury/fighter/fighter_one,
+/obj/machinery/computer/supercruise,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/sbc_fighter1)
 "V" = (
@@ -167,3 +167,4 @@ f
 q
 a
 "}
+

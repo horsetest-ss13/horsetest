@@ -84,7 +84,7 @@
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/shuttle/sbc_fighter3)
 "J" = (
-/obj/machinery/computer/shuttle/starfury/fighter/fighter_three,
+/obj/machinery/computer/supercruise,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/sbc_fighter3)
 "N" = (
@@ -164,3 +164,4 @@ n
 g
 a
 "}
+

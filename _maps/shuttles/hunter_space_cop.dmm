@@ -8,7 +8,7 @@
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/hunter)
 "ab" = (
-/obj/machinery/computer/shuttle/hunter{
+/obj/machinery/computer/supercruise{
 	dir = 8
 	},
 /turf/open/floor/mineral/titanium/blue,
@@ -259,3 +259,4 @@ An
 ku
 Pq
 "}
+

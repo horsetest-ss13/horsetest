@@ -959,7 +959,7 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/abandoned/bridge)
 "ch" = (
-/obj/machinery/computer/shuttle/white_ship/bridge{
+/obj/machinery/computer/supercruise{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -2459,3 +2459,4 @@ cy
 cx
 aa
 "}
+

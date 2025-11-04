@@ -257,7 +257,7 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/ruin/caravan/syndicate3)
 "DF" = (
-/obj/machinery/computer/shuttle/caravan/syndicate3{
+/obj/machinery/computer/supercruise3{
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/red/half/contrasted{
@@ -620,3 +620,4 @@ kk
 kk
 Jv
 "}
+

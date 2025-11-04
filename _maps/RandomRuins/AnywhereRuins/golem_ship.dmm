@@ -695,7 +695,7 @@
 /turf/open/floor/plating,
 /area/ruin/powered/golem_ship)
 "Ta" = (
-/obj/machinery/computer/shuttle{
+/obj/machinery/computer/supercruise{
 	dir = 4
 	},
 /turf/open/floor/mineral/titanium/purple,
@@ -1175,3 +1175,4 @@ mU
 mU
 Df
 "}
+

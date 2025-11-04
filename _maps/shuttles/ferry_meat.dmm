@@ -22,7 +22,7 @@
 /turf/open/floor/iron/freezer,
 /area/shuttle/transport)
 "g" = (
-/obj/machinery/computer/shuttle/ferry/request{
+/obj/machinery/computer/supercruise{
 	dir = 8
 	},
 /turf/open/floor/iron/freezer,
@@ -220,3 +220,4 @@ q
 o
 c
 "}
+

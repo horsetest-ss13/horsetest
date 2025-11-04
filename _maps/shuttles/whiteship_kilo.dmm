@@ -477,7 +477,7 @@
 /obj/effect/turf_decal/trimline/white/filled/warning{
 	dir = 5
 	},
-/obj/machinery/computer/shuttle/white_ship/bridge{
+/obj/machinery/computer/supercruise{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -1453,3 +1453,4 @@ gk
 Xk
 Gu
 "}
+

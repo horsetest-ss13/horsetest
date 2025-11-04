@@ -880,7 +880,7 @@
 /turf/open/floor/iron/white/diagonal,
 /area/shuttle/abandoned)
 "Lf" = (
-/obj/machinery/computer/shuttle/white_ship/bridge,
+/obj/machinery/computer/supercruise,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/pod/dark,
 /area/shuttle/abandoned)
@@ -1566,3 +1566,4 @@ zY
 zY
 zY
 "}
+

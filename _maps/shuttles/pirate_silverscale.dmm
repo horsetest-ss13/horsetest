@@ -94,7 +94,7 @@
 /turf/open/floor/carpet/royalblack,
 /area/shuttle/pirate)
 "fj" = (
-/obj/machinery/computer/shuttle/pirate{
+/obj/machinery/computer/supercruise{
 	dir = 8
 	},
 /turf/open/floor/iron/dark/side{
@@ -1523,3 +1523,4 @@ je
 je
 je
 "}
+

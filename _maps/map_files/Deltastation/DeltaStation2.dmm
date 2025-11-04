@@ -479,7 +479,7 @@
 /turf/open/floor/iron/dark,
 /area/station/security/execution/transfer)
 "afY" = (
-/obj/machinery/computer/shuttle/mining{
+/obj/machinery/computer/supercruise{
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/yellow/half/contrasted{
@@ -57420,7 +57420,7 @@
 /turf/open/floor/iron/dark,
 /area/station/ai_monitored/turret_protected/aisat_interior)
 "olI" = (
-/obj/machinery/computer/shuttle/mining{
+/obj/machinery/computer/supercruise{
 	dir = 8
 	},
 /obj/item/radio/intercom/directional/east{
@@ -73310,7 +73310,7 @@
 /area/station/hallway/secondary/entry)
 "sfy" = (
 /obj/effect/turf_decal/delivery,
-/obj/machinery/computer/shuttle/mining/common,
+/obj/machinery/computer/supercruise,
 /obj/structure/sign/directions/engineering{
 	desc = "A sign that shows there are doors here. There are doors everywhere!";
 	icon_state = "doors";
@@ -79271,7 +79271,7 @@
 /turf/open/floor/iron/dark,
 /area/station/ai_monitored/turret_protected/ai_upload)
 "tDD" = (
-/obj/machinery/computer/shuttle/mining{
+/obj/machinery/computer/supercruise{
 	dir = 1
 	},
 /obj/effect/turf_decal/bot,
@@ -79882,7 +79882,7 @@
 /turf/open/floor/iron,
 /area/station/construction/mining/aux_base)
 "tKW" = (
-/obj/machinery/computer/shuttle/labor,
+/obj/machinery/computer/supercruise,
 /obj/machinery/status_display/evac/directional/north,
 /obj/effect/turf_decal/trimline/red/filled/line{
 	dir = 1
@@ -163659,3 +163659,4 @@ aaa
 aaa
 aaa
 "}
+

@@ -31,7 +31,7 @@
 "qe" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/computer/shuttle/caravan/syndicate1{
+/obj/machinery/computer/supercruise1{
 	dir = 8
 	},
 /turf/open/floor/mineral/plastitanium/red,
@@ -156,3 +156,4 @@ Jv
 Jv
 cZ
 "}
+

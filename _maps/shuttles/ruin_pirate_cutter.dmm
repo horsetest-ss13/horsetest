@@ -382,7 +382,7 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/ruin/caravan/pirate)
 "Aj" = (
-/obj/machinery/computer/shuttle/caravan/pirate{
+/obj/machinery/computer/supercruise{
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/red/half/contrasted{
@@ -1181,3 +1181,4 @@ Jv
 Jv
 Jv
 "}
+

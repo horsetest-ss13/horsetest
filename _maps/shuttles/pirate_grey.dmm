@@ -1472,7 +1472,7 @@
 /turf/open/floor/plating,
 /area/shuttle/pirate)
 "YQ" = (
-/obj/machinery/computer/shuttle/pirate,
+/obj/machinery/computer/supercruise,
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/tile/red/half/contrasted,
 /turf/open/floor/iron/dark,
@@ -2009,3 +2009,4 @@ je
 je
 je
 "}
+

@@ -48,7 +48,7 @@
 /turf/open/floor/iron/kitchen,
 /area/shuttle/pirate)
 "bV" = (
-/obj/machinery/computer/shuttle/pirate,
+/obj/machinery/computer/supercruise,
 /obj/effect/turf_decal/trimline/dark_blue/filled/line{
 	dir = 9
 	},
@@ -2535,3 +2535,4 @@ px
 WR
 WR
 "}
+

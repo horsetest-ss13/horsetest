@@ -903,7 +903,7 @@
 /area/shuttle/abandoned/bridge)
 "cb" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/computer/shuttle/white_ship/bridge{
+/obj/machinery/computer/supercruise{
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/blue/half/contrasted{
@@ -2335,3 +2335,4 @@ aa
 aa
 aa
 "}
+

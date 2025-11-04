@@ -417,7 +417,7 @@
 /area/shuttle/ruin/caravan/freighter1)
 "DV" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/computer/shuttle/caravan/trade1{
+/obj/machinery/computer/supercruise1{
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/blue/anticorner/contrasted{
@@ -1223,3 +1223,4 @@ Jv
 Jv
 Jv
 "}
+

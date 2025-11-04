@@ -289,7 +289,7 @@
 /turf/open/floor/plating,
 /area/shuttle/pirate)
 "aN" = (
-/obj/machinery/computer/shuttle/pirate/drop_pod,
+/obj/machinery/computer/supercruise,
 /turf/open/floor/stone,
 /area/shuttle/pirate)
 "aO" = (
@@ -551,3 +551,4 @@ aB
 qA
 aa
 "}
+

@@ -3502,7 +3502,7 @@
 /turf/open/floor/plating,
 /area/station/maintenance/department/medical)
 "bhY" = (
-/obj/machinery/computer/shuttle/labor{
+/obj/machinery/computer/supercruise{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/dark_blue/anticorner/contrasted{
@@ -23656,7 +23656,7 @@
 /obj/effect/turf_decal/tile/yellow/anticorner/contrasted{
 	dir = 8
 	},
-/obj/machinery/computer/shuttle/mining{
+/obj/machinery/computer/supercruise{
 	dir = 4
 	},
 /obj/structure/window/reinforced/spawner/directional/south,
@@ -51498,7 +51498,7 @@
 /turf/open/floor/carpet,
 /area/station/security/detectives_office)
 "rJW" = (
-/obj/machinery/computer/shuttle/labor{
+/obj/machinery/computer/supercruise{
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/red/anticorner/contrasted{
@@ -57157,7 +57157,7 @@
 /turf/open/floor/carpet/red,
 /area/station/command/heads_quarters/qm)
 "tCt" = (
-/obj/machinery/computer/shuttle/mining{
+/obj/machinery/computer/supercruise{
 	dir = 4
 	},
 /obj/effect/turf_decal/stripes/line{
@@ -62568,7 +62568,7 @@
 "vzi" = (
 /obj/structure/window/reinforced/spawner/directional/west,
 /obj/structure/window/reinforced/spawner/directional/north,
-/obj/machinery/computer/shuttle/mining/common{
+/obj/machinery/computer/supercruise{
 	pixel_x = 2
 	},
 /turf/open/floor/plating,
@@ -201642,3 +201642,4 @@ hhX
 hhX
 hhX
 "}
+

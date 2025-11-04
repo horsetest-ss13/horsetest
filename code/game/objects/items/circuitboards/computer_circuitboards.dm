@@ -297,7 +297,7 @@
 /obj/item/circuitboard/computer/monastery_shuttle
 	name = "Monastery Shuttle"
 	greyscale_colors = CIRCUIT_COLOR_GENERIC
-	build_path = /obj/machinery/computer/shuttle/monastery_shuttle
+	build_path = /obj/machinery/computer/supercruise
 
 /obj/item/circuitboard/computer/olddoor
 	name = "DoorMex"
@@ -322,7 +322,7 @@
 /obj/item/circuitboard/computer/syndicate_shuttle
 	name = "Syndicate Shuttle"
 	greyscale_colors = CIRCUIT_COLOR_GENERIC
-	build_path = /obj/machinery/computer/shuttle/syndicate
+	build_path = /obj/machinery/computer/supercruise
 	/// If operatives declared war this will be the time challenge was started
 	var/challenge_start_time
 	var/moved = FALSE
@@ -343,12 +343,12 @@
 /obj/item/circuitboard/computer/white_ship
 	name = "White Ship"
 	greyscale_colors = CIRCUIT_COLOR_GENERIC
-	build_path = /obj/machinery/computer/shuttle/white_ship
+	build_path = /obj/machinery/computer/supercruise
 
 /obj/item/circuitboard/computer/white_ship/bridge
 	name = "White Ship Bridge"
 	greyscale_colors = CIRCUIT_COLOR_GENERIC
-	build_path = /obj/machinery/computer/shuttle/white_ship/bridge
+	build_path = /obj/machinery/computer/supercruise
 
 /obj/item/circuitboard/computer/bountypad
 	name = "Bounty Pad"
@@ -493,12 +493,12 @@
 /obj/item/circuitboard/computer/labor_shuttle
 	name = "Labor Shuttle"
 	greyscale_colors = CIRCUIT_COLOR_SECURITY
-	build_path = /obj/machinery/computer/shuttle/labor
+	build_path = /obj/machinery/computer/supercruise
 
 /obj/item/circuitboard/computer/labor_shuttle/one_way
 	name = "Prisoner Shuttle Console"
 	greyscale_colors = CIRCUIT_COLOR_SECURITY
-	build_path = /obj/machinery/computer/shuttle/labor/one_way
+	build_path = /obj/machinery/computer/supercruise
 
 /obj/item/circuitboard/computer/gulag_teleporter_console
 	name = "Labor Camp teleporter console"
@@ -615,12 +615,12 @@
 /obj/item/circuitboard/computer/ferry
 	name = "Transport Ferry"
 	greyscale_colors = CIRCUIT_COLOR_SUPPLY
-	build_path = /obj/machinery/computer/shuttle/ferry
+	build_path = /obj/machinery/computer/supercruise
 
 /obj/item/circuitboard/computer/ferry/request
 	name = "Transport Ferry Console"
 	greyscale_colors = CIRCUIT_COLOR_SUPPLY
-	build_path = /obj/machinery/computer/shuttle/ferry/request
+	build_path = /obj/machinery/computer/supercruise
 
 /obj/item/circuitboard/computer/mining
 	name = "Outpost Status Display"
@@ -630,16 +630,16 @@
 /obj/item/circuitboard/computer/mining_shuttle
 	name = "Mining Shuttle"
 	greyscale_colors = CIRCUIT_COLOR_SUPPLY
-	build_path = /obj/machinery/computer/shuttle/mining
+	build_path = /obj/machinery/computer/supercruise
 
 /obj/item/circuitboard/computer/mining_shuttle/common
 	name = "Lavaland Shuttle"
-	build_path = /obj/machinery/computer/shuttle/mining/common
+	build_path = /obj/machinery/computer/supercruise
 
 /obj/item/circuitboard/computer/emergency_pod
 	name = "Emergency Pod Controls"
 	greyscale_colors = CIRCUIT_COLOR_GENERIC
-	build_path = /obj/machinery/computer/shuttle/pod
+	build_path = /obj/machinery/computer/supercruise
 
 /obj/item/circuitboard/computer/exoscanner_console
 	name = "Scanner Array Control Console"
@@ -664,7 +664,7 @@
 
 /obj/item/circuitboard/computer/shuttle/flight_control
 	name = "Shuttle Flight Control"
-	build_path = /obj/machinery/computer/shuttle/custom_shuttle
+	build_path = /obj/machinery/computer/supercruise
 
 /obj/item/circuitboard/computer/shuttle/docker
 	name = "Shuttle Navigation Computer"

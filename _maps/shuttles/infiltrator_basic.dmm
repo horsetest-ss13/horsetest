@@ -44,7 +44,7 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/syndicate/bridge)
 "aj" = (
-/obj/machinery/computer/shuttle/syndicate,
+/obj/machinery/computer/supercruise,
 /turf/open/floor/iron/dark,
 /area/shuttle/syndicate/bridge)
 "ak" = (
@@ -1544,3 +1544,4 @@ bn
 bn
 bn
 "}
+

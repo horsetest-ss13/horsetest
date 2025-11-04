@@ -12979,7 +12979,7 @@
 /obj/effect/turf_decal/siding/dark{
 	dir = 5
 	},
-/obj/machinery/computer/shuttle/mining{
+/obj/machinery/computer/supercruise{
 	dir = 8
 	},
 /obj/effect/turf_decal/trimline/brown/corner{
@@ -35751,7 +35751,7 @@
 /turf/open/floor/iron/dark/small,
 /area/station/science/lab)
 "foX" = (
-/obj/machinery/computer/shuttle/mining{
+/obj/machinery/computer/supercruise{
 	dir = 1;
 	req_access = null
 	},
@@ -61516,7 +61516,7 @@
 /turf/open/floor/iron,
 /area/station/maintenance/starboard/fore)
 "jdT" = (
-/obj/machinery/computer/shuttle/labor,
+/obj/machinery/computer/supercruise,
 /obj/machinery/status_display/evac/directional/north,
 /obj/effect/turf_decal/trimline/red/filled/line{
 	dir = 1
@@ -66094,7 +66094,7 @@
 /turf/open/floor/wood/large,
 /area/station/security/detectives_office)
 "jNh" = (
-/obj/machinery/computer/shuttle/mining{
+/obj/machinery/computer/supercruise{
 	req_access = null
 	},
 /obj/effect/turf_decal/trimline/brown/filled/line{
@@ -88855,7 +88855,7 @@
 /turf/open/floor/plating,
 /area/station/maintenance/starboard/central)
 "nkU" = (
-/obj/machinery/computer/shuttle/labor{
+/obj/machinery/computer/supercruise{
 	dir = 8
 	},
 /obj/effect/turf_decal/siding/dark{
@@ -101223,7 +101223,7 @@
 /turf/open/floor/iron/dark/textured,
 /area/station/engineering/atmos/project)
 "oYz" = (
-/obj/machinery/computer/shuttle/mining/common,
+/obj/machinery/computer/supercruise,
 /obj/structure/cable,
 /obj/item/toy/figure/dsquad{
 	pixel_y = 17;
@@ -159665,7 +159665,7 @@
 	},
 /area/station/medical/pharmacy)
 "xLr" = (
-/obj/machinery/computer/shuttle/mining{
+/obj/machinery/computer/supercruise{
 	dir = 4;
 	req_access = null
 	},
@@ -294329,3 +294329,4 @@ txW
 txW
 txW
 "}
+

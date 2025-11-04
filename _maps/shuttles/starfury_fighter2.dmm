@@ -39,7 +39,7 @@
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/shuttle/sbc_fighter2)
 "o" = (
-/obj/machinery/computer/shuttle/starfury/fighter/fighter_two,
+/obj/machinery/computer/supercruise,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/sbc_fighter2)
 "q" = (
@@ -162,3 +162,4 @@ V
 q
 a
 "}
+

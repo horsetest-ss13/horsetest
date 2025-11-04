@@ -671,7 +671,7 @@
 /turf/open/floor/circuit/airless,
 /area/shuttle/ruin/cyborg_mothership)
 "MB" = (
-/obj/machinery/computer/shuttle/cyborg_mothership{
+/obj/machinery/computer/supercruise{
 	dir = 1
 	},
 /turf/open/floor/circuit/green/airless,
@@ -1495,3 +1495,4 @@ hR
 hR
 hR
 "}
+
