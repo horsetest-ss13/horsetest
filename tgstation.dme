@@ -6769,4 +6769,10 @@
 #include "interface\fonts\spess_font.dm"
 #include "interface\fonts\tiny_unicode.dm"
 #include "interface\fonts\vcr_osd_mono.dm"
+#include "modular_horsetest\modules\horse\code\breeds.dm"
+#include "modular_horsetest\modules\horse\code\cargo.dm"
+#include "modular_horsetest\modules\horse\code\competition_board.dm"
+#include "modular_horsetest\modules\horse\code\horse.dm"
+#include "modular_horsetest\modules\horse\code\horse_feed.dm"
+#include "modular_horsetest\modules\horse\code\horse_holdie.dm"
 // END_INCLUDE
