@@ -318,7 +318,7 @@
 	if(!. || !isliving(target))
 		return
 	var/mob/living/L = target
-	L.adjustStaminaLoss(15)
+	L.adjust_stamina_loss(15)
 	to_chat(L, span_warning("You feel your energy being drained!"))
 
 /// Glimmerwing - crystalline creature, reflects damage
