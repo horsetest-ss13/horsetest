@@ -298,7 +298,7 @@
 				target.ChangeTurf(/turf/open/floor/plating)
 			else if(tile_type == ROOM_TILE_DOOR)
 				target.ChangeTurf(/turf/open/floor/plating)
-				new /obj/machinery/door/airlock(target)
+				new /obj/machinery/door/airlock/public(target)
 			else if(tile_type == ROOM_TILE_ENTRANCE)
 				target.ChangeTurf(/turf/open/floor/iron/dark)
 			else if(tile_type == ROOM_TILE_EXIT)
