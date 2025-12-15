@@ -90,20 +90,6 @@
 	AddElement(/datum/element/simple_flying)
 	set_light(1, 1, "#88DDFF") // Sprites glow faintly
 
-/// Sprites have a chance to blink away when hit - but AFTER taking damage
-/mob/living/basic/dungeon_mob/sprite/apply_damage(damage, damagetype, def_zone, blocked, forced, spread_damage, wound_bonus, bare_wound_bonus, sharpness, attack_direction, attacking_item, wound_clothing)
-	// Call parent to actually apply the damage first
-	. = ..(damage, damagetype, def_zone, blocked, forced, spread_damage, wound_bonus, bare_wound_bonus, sharpness, attack_direction, attacking_item, wound_clothing)
-	// Only try to blink away if we actually took damage, are alive, and get lucky
-	if(. > 0 && prob(30) && stat == CONSCIOUS)
-		var/list/turfs = list()
-		for(var/turf/T in oview(3, src))
-			if(!T.density)
-				turfs += T
-		if(length(turfs))
-			var/turf/destination = pick(turfs)
-			do_teleport(src, destination, no_effects = FALSE, channel = TELEPORT_CHANNEL_MAGIC)
-			visible_message(span_warning("[src] blinks away!"))
 
 /// Imp - fire-based, moderate threat
 /mob/living/basic/dungeon_mob/imp
@@ -360,22 +346,6 @@
 	AddElement(/datum/element/simple_flying)
 	set_light(3, 2, "#88DDFF")
 
-/// Glimmerwing reflects damage back to attackers
-/mob/living/basic/dungeon_mob/glimmerwing/apply_damage(damage, damagetype, def_zone, blocked, forced, spread_damage, wound_bonus, bare_wound_bonus, sharpness, attack_direction, attacking_item, wound_clothing)
-	// Call parent to actually apply the damage first
-	. = ..(damage, damagetype, def_zone, blocked, forced, spread_damage, wound_bonus, bare_wound_bonus, sharpness, attack_direction, attacking_item, wound_clothing)
-	// Only reflect if we actually took damage and are alive
-	if(. <= 0 || stat == DEAD)
-		return .
-	// Reflect 25% of the ACTUAL damage dealt back to nearby attackers
-	var/reflected_damage = . * 0.25
-	for(var/mob/living/L in range(1, src))
-		if(L == src)
-			continue
-		if(!(FACTION_DUNGEON in L.faction))
-			L.apply_damage(reflected_damage, damagetype)
-			to_chat(L, span_warning("Crystal shards cut into you!"))
-			playsound(src, 'sound/effects/glass/glassbr2.ogg', 30, TRUE)
 
 // ==================== BOSS MOBS ====================
 
