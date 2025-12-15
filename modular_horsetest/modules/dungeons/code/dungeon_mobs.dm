@@ -407,8 +407,8 @@
 /mob/living/basic/dungeon_mob/flower_stalker
 	name = "flower stalker"
 	desc = "A grotesque plant creature with a single unblinking eye at its center. It watches you hungrily."
-	icon_state = "flower_stalker"
-	icon_living = "flower_stalker"
+	icon_state = "flower_spirit"
+	icon_living = "flower_spirit"
 	health = 70
 	maxHealth = 70
 	melee_damage_lower = 10
