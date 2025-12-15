@@ -15,8 +15,19 @@
 	unsuitable_heat_damage = 0
 	damage_coeff = list(BRUTE = 1, BURN = 1, TOX = 0, STAMINA = 0, OXY = 0)
 	ai_controller = /datum/ai_controller/basic_controller/simple/simple_hostile_obstacles
+	mouse_opacity = MOUSE_OPACITY_ICON // Ensure mobs are clickable/targetable
+	density = TRUE // Ensure mobs can be hit by projectiles
 	/// What tier is this mob? Used for spawning based on difficulty
 	var/tier = 1
+
+/mob/living/basic/dungeon_mob/Initialize(mapload)
+	. = ..()
+	// Ensure damage coefficients are properly set
+	if(!damage_coeff || !islist(damage_coeff))
+		damage_coeff = list(BRUTE = 1, BURN = 1, TOX = 0, STAMINA = 0, OXY = 0)
+	// Make sure we're properly initialized for combat
+	if(!icon_state && icon_living)
+		icon_state = icon_living
 
 // ==================== TIER 1 MOBS (Easy - Difficulty 1-2) ====================
 
@@ -79,10 +90,12 @@
 	AddElement(/datum/element/simple_flying)
 	set_light(1, 1, "#88DDFF") // Sprites glow faintly
 
-/// Sprites have a chance to blink away when hit
-/mob/living/basic/dungeon_mob/sprite/apply_damage(damage, damagetype, def_zone, blocked, forced, spread_damage, wound_bonus, bare_wound_bonus, sharpness, attack_direction, attacking_item)
-	. = ..()
-	if(. && prob(30) && !stat)
+/// Sprites have a chance to blink away when hit - but AFTER taking damage
+/mob/living/basic/dungeon_mob/sprite/apply_damage(damage, damagetype, def_zone, blocked, forced, spread_damage, wound_bonus, bare_wound_bonus, sharpness, attack_direction, attacking_item, wound_clothing)
+	// Call parent to actually apply the damage first
+	. = ..(damage, damagetype, def_zone, blocked, forced, spread_damage, wound_bonus, bare_wound_bonus, sharpness, attack_direction, attacking_item, wound_clothing)
+	// Only try to blink away if we actually took damage, are alive, and get lucky
+	if(. > 0 && prob(30) && stat == CONSCIOUS)
 		var/list/turfs = list()
 		for(var/turf/T in oview(3, src))
 			if(!T.density)
@@ -348,12 +361,14 @@
 	set_light(3, 2, "#88DDFF")
 
 /// Glimmerwing reflects damage back to attackers
-/mob/living/basic/dungeon_mob/glimmerwing/apply_damage(damage, damagetype, def_zone, blocked, forced, spread_damage, wound_bonus, bare_wound_bonus, sharpness, attack_direction, attacking_item)
-	. = ..()
-	if(!. || !damage || stat == DEAD)
-		return
-	// Reflect 25% of damage back to nearby attackers
-	var/reflected_damage = damage * 0.25
+/mob/living/basic/dungeon_mob/glimmerwing/apply_damage(damage, damagetype, def_zone, blocked, forced, spread_damage, wound_bonus, bare_wound_bonus, sharpness, attack_direction, attacking_item, wound_clothing)
+	// Call parent to actually apply the damage first
+	. = ..(damage, damagetype, def_zone, blocked, forced, spread_damage, wound_bonus, bare_wound_bonus, sharpness, attack_direction, attacking_item, wound_clothing)
+	// Only reflect if we actually took damage and are alive
+	if(. <= 0 || stat == DEAD)
+		return .
+	// Reflect 25% of the ACTUAL damage dealt back to nearby attackers
+	var/reflected_damage = . * 0.25
 	for(var/mob/living/L in range(1, src))
 		if(L == src)
 			continue
