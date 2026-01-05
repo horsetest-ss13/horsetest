@@ -258,7 +258,6 @@
 	faction = list()
 	default_blood_volume = MAX_BLOOD_LEVEL
 	hud_type = /datum/hud/soulscythe
-	spawn_blacklisted = TRUE
 
 /mob/living/basic/soulscythe/Initialize(mapload)
 	. = ..()

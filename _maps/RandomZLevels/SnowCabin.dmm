@@ -1530,9 +1530,9 @@
 /turf/open/floor/carpet,
 /area/awaymission/cabin/caves/mountain)
 "hL" = (
-/obj/structure/sign/nanotrasen/directional/north,
-/turf/open/misc/ice/smooth,
-/area/awaymission/cabin/caves)
+/obj/structure/sign/nanotrasen,
+/turf/closed/wall/mineral/snow,
+/area/awaymission/cabin/caves/mountain)
 "hM" = (
 /turf/closed/wall/mineral/snow,
 /area/awaymission/cabin/caves/mountain)
@@ -1659,8 +1659,7 @@
 /area/awaymission/cabin/caves)
 "iP" = (
 /obj/structure/sign/picture_frame{
-	pixel_y = 32;
-	dir = 1
+	pixel_y = 32
 	},
 /turf/open/floor/wood,
 /area/awaymission/cabin/caves)
@@ -2485,11 +2484,8 @@
 /turf/closed/indestructible/syndicate,
 /area/awaymission/cabin/caves/sovietcave)
 "no" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/sign/warning/directional/south,
-/turf/open/floor/mineral/plastitanium/red{
-	name = "soviet floor"
-	},
+/obj/structure/sign/warning,
+/turf/closed/indestructible/syndicate,
 /area/awaymission/cabin/caves/sovietcave)
 "np" = (
 /turf/closed/indestructible/fakedoor{
@@ -2846,14 +2842,6 @@
 	},
 /turf/open/misc/asteroid/snow/snow_cabin,
 /area/awaymission/cabin/caves)
-"qx" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/spider/stickyweb,
-/obj/structure/sign/warning/directional/south,
-/turf/open/floor/mineral/plastitanium/red{
-	name = "soviet floor"
-	},
-/area/awaymission/cabin/caves/sovietcave)
 "qz" = (
 /obj/effect/light_emitter{
 	set_cap = 3;
@@ -3599,8 +3587,10 @@
 /turf/open/floor/plating/snowed/snow_cabin,
 /area/awaymission/cabin/snowforest/sovietsurface)
 "yJ" = (
+/obj/structure/sign/poster/contraband/free_drone{
+	desc = "This poster seems to be meant for a bunch of machines that used to be deployed on space stations."
+	},
 /obj/effect/turf_decal/tile/blue/fourcorners,
-/obj/structure/sign/poster/contraband/free_drone/directional/west,
 /turf/open/indestructible,
 /area/awaymission/cabin/caves/mountain)
 "yP" = (
@@ -4052,13 +4042,6 @@
 	},
 /turf/open/floor/plating/snowed,
 /area/awaymission/cabin/snowforest)
-"EK" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/sign/warning/directional/north,
-/turf/open/floor/mineral/plastitanium/red{
-	name = "soviet floor"
-	},
-/area/awaymission/cabin/caves/sovietcave)
 "EL" = (
 /obj/machinery/light/directional/east,
 /obj/effect/decal/cleanable/dirt,
@@ -4157,10 +4140,6 @@
 /obj/structure/flora/tree/pine/style_random,
 /turf/open/misc/asteroid/snow/snow_cabin,
 /area/awaymission/cabin/caves)
-"Gf" = (
-/obj/structure/sign/poster/official/soft_cap_pop_art/directional/north,
-/turf/open/floor/wood,
-/area/awaymission/cabin)
 "Gk" = (
 /obj/structure/closet/crate/bin,
 /obj/machinery/light/small/directional/east,
@@ -5546,12 +5525,16 @@
 /turf/open/floor/plating/snowed/smoothed,
 /area/awaymission/cabin/caves)
 "Zb" = (
+/obj/structure/fence{
+	dir = 4
+	},
+/obj/structure/sign/nanotrasen,
 /obj/effect/light_emitter{
 	set_cap = 3;
 	set_luminosity = 6;
 	light_color = "#9bbbff"
 	},
-/turf/closed/wall,
+/turf/open/misc/asteroid/snow/snow_cabin,
 /area/awaymission/cabin/caves)
 "Zf" = (
 /obj/structure/fence{
@@ -5592,16 +5575,6 @@
 /obj/machinery/light/directional/south,
 /turf/open/floor/wood/freezing,
 /area/awaymission/cabin/lumbermill)
-"ZZ" = (
-/obj/effect/light_emitter{
-	name = "cave light";
-	set_cap = 3;
-	set_luminosity = 6;
-	light_color = "#9bbbff"
-	},
-/obj/structure/sign/nanotrasen/directional/north,
-/turf/open/misc/asteroid/snow/snow_cabin,
-/area/awaymission/cabin/caves)
 
 (1,1,1) = {"
 ab
@@ -17139,7 +17112,7 @@ vh
 vh
 vh
 Zb
-ZZ
+Su
 oz
 oz
 oz
@@ -18938,7 +18911,7 @@ vh
 vh
 vh
 Zb
-ZZ
+Su
 oz
 oz
 oz
@@ -29148,8 +29121,8 @@ Yp
 aA
 jj
 an
-aq
 eg
+aq
 an
 cN
 aq
@@ -29405,8 +29378,8 @@ an
 an
 an
 an
-Gf
-eg
+ct
+aq
 an
 jE
 aq
@@ -29662,8 +29635,8 @@ sG
 au
 ji
 an
-aq
-ht
+eg
+bh
 an
 cO
 cO
@@ -48310,8 +48283,8 @@ gx
 gx
 gx
 gx
-hM
 hL
+PV
 PV
 PV
 PV
@@ -49338,8 +49311,8 @@ gx
 gx
 gx
 gx
-hM
 hL
+PV
 PV
 PV
 PV
@@ -68777,10 +68750,10 @@ gx
 gx
 gx
 gx
-ii
-EK
 no
-ii
+im
+im
+no
 gx
 gx
 gx
@@ -69291,10 +69264,10 @@ gx
 gx
 gx
 gx
-ii
-EK
-qx
-ii
+no
+im
+lS
+no
 gx
 gx
 gx

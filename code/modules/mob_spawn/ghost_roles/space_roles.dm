@@ -14,12 +14,10 @@
 	important_text = "Work as a team with your fellow survivors and do not abandon them."
 	outfit = /datum/outfit/oldeng
 	spawner_job_path = /datum/job/ancient_crew
-	allow_custom_character = GHOSTROLE_TAKE_PREFS_APPEARANCE
+	allow_custom_character = GHOSTROLE_ALLOW_OTHER
 
-/obj/effect/mob_spawn/ghost_role/human/oldstation/create(mob/mob_possessor, newname, apply_prefs)
+/obj/effect/mob_spawn/ghost_role/human/oldstation/create_from_ghost(mob/dead/user)
 	. = ..()
-	if(!.)
-		return
 	notify_ghosts(
 		"Someone just woke up on Charlie Station! Why not join them and help out?",
 		source = ., //the spawned mob

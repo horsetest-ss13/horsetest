@@ -1,7 +1,7 @@
 /mob/living
 	see_invisible = SEE_INVISIBLE_LIVING
 	abstract_type = /mob/living
-	hud_possible = list(HEALTH_HUD,STATUS_HUD,BLOOD_HUD,ANTAG_HUD)
+	hud_possible = list(HEALTH_HUD,STATUS_HUD,ANTAG_HUD)
 	pressure_resistance = 10
 	hud_type = /datum/hud/living
 	interaction_flags_click = ALLOW_RESTING
@@ -94,8 +94,10 @@
 	/// Lazylist of all typepaths of personalities the mob has.
 	var/list/personalities
 
-	/// Lazylist of surgery speed modifiers - id to number - 2 = 2x faster, 0.5x = 0.5x slower
-	var/list/mob_surgery_speed_mods
+	///a list of surgery datums. generally empty, they're added when the player wants them.
+	var/list/surgeries = list()
+	///Mob specific surgery speed modifier
+	var/mob_surgery_speed_mod = 1
 
 	/// Used by [living/Bump()][/mob/living/proc/Bump] and [living/PushAM()][/mob/living/proc/PushAM] to prevent potential infinite loop.
 	var/now_pushing = null
@@ -111,7 +113,7 @@
 	var/mob_size = MOB_SIZE_HUMAN
 	/// List of biotypes the mob belongs to. Used by diseases and reagents mainly.
 	var/mob_biotypes = MOB_ORGANIC
-	/// The type of respiration the mob is capable of doing. Used by adjust_oxy_loss.
+	/// The type of respiration the mob is capable of doing. Used by adjustOxyLoss.
 	var/mob_respiration_type = RESPIRATION_OXYGEN
 	///more or less efficiency to metabolize helpful/harmful reagents and regulate body temperature..
 	var/metabolism_efficiency = 1
@@ -169,9 +171,6 @@
 	var/blood_volume = 0
 	/// The default blood volume of the mob. Used primarily for healing bloodloss.
 	var/default_blood_volume = 0
-	/// Lazylist of blood volume modifiers. These multiply blood volume when get_blood_volume(apply_modifiers = TRUE) is used.
-	/// Use set_blood_volume_modifier(multiplier, source) and remove_blood_volume_modifier(source) to modify this.
-	var/list/blood_volume_modifiers = null
 
 	///a list of all status effects the mob has
 	var/list/status_effects

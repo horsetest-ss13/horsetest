@@ -91,6 +91,8 @@
 
 	/// What status effect we assign on application
 	var/status_effect_type
+	/// If we're operating on this wound and it gets healed, we'll nix the surgery too
+	var/datum/surgery/attached_surgery
 	/// if you're a lazy git and just throw them in cryo, the wound will go away after accumulating severity * [base_xadone_progress_to_qdel] power
 	var/cryo_progress
 
@@ -119,8 +121,9 @@
 	update_actionspeed_modifier()
 
 /datum/wound/Destroy()
+	QDEL_NULL(attached_surgery)
 	if (limb)
-		remove_wound(destroying = QDELING(limb))
+		remove_wound()
 
 	QDEL_NULL(actionspeed_mod)
 
@@ -279,9 +282,7 @@
 			add_or_remove_actionspeed_mod()
 
 /// Proc called to change the variable `limb` and react to the event.
-/// * replaced - Is the wound being overriden by another (stronger) wound?
-/// * destroying - Is this coming from a limb's Destroy() call? If so, cut down on updates we cause
-/datum/wound/proc/set_limb(obj/item/bodypart/new_value, replaced = FALSE, destroying = FALSE)
+/datum/wound/proc/set_limb(obj/item/bodypart/new_value, replaced = FALSE)
 	if(limb == new_value)
 		return FALSE //Limb can either be a reference to something or `null`. Returning the number variable makes it clear no change was made.
 	. = limb
@@ -289,8 +290,7 @@
 		UnregisterSignal(limb, COMSIG_QDELETING)
 		UnregisterSignal(limb, list(COMSIG_BODYPART_GAUZED, COMSIG_BODYPART_UNGAUZED))
 		LAZYREMOVE(limb.wounds, src)
-		if (!destroying)
-			limb.update_wounds(replaced)
+		limb.update_wounds(replaced)
 		if (disabling)
 			limb.remove_traits(list(TRAIT_PARALYSIS, TRAIT_DISABLED_BY_WOUND), REF(src))
 
@@ -326,17 +326,14 @@
 	SIGNAL_HANDLER
 	qdel(src)
 
-/// Remove the wound from whatever it's afflicting, and cleans up whatever status effects it had or modifiers it had on interaction times.
-/// * ignore_limb - Used for detachments where we only want to forget the victim
-/// * replaced - If the wound is being replaced by another type
-/// * destroying - If we're being removed by a limb getting destroyed
-/datum/wound/proc/remove_wound(ignore_limb, replaced = FALSE, destroying = FALSE)
+/// Remove the wound from whatever it's afflicting, and cleans up whatever status effects it had or modifiers it had on interaction times. ignore_limb is used for detachments where we only want to forget the victim
+/datum/wound/proc/remove_wound(ignore_limb, replaced = FALSE)
 	//TODO: have better way to tell if we're getting removed without replacement (full heal) scar stuff
 	var/old_victim = victim
 	var/old_limb = limb
 
 	set_disabling(FALSE)
-	if(limb && can_scar && !already_scarred && !replaced && !destroying)
+	if(limb && can_scar && !already_scarred && !replaced)
 		already_scarred = TRUE
 		var/datum/scar/new_scar = new
 		new_scar.generate(limb, src)
@@ -346,12 +343,12 @@
 	null_victim() // we use the proc here because some behaviors may depend on changing victim to some new value
 
 	if(limb && !ignore_limb)
-		set_limb(null, replaced, destroying) // since we're removing limb's ref to us, we should do the same
+		set_limb(null, replaced) // since we're removing limb's ref to us, we should do the same
 		// if you want to keep the ref, do it externally, there's no reason for us to remember it
 
 	if (ismob(old_victim))
 		var/mob/mob_victim = old_victim
-		SEND_SIGNAL(mob_victim, COMSIG_CARBON_POST_LOSE_WOUND, src, old_limb, ignore_limb, replaced, destroying)
+		SEND_SIGNAL(mob_victim, COMSIG_CARBON_POST_LOSE_WOUND, src, old_limb, ignore_limb, replaced)
 		if(!replaced && !limb)
 			mob_victim.update_health_hud()
 
@@ -509,6 +506,18 @@
 
 /// Returns TRUE if the item can be used to treat our wounds. Hooks into treat() - only things that return TRUE here may be used there.
 /datum/wound/proc/item_can_treat(obj/item/potential_treater, mob/user)
+	// surgeries take priority
+	for(var/datum/surgery/operation as anything in victim.surgeries)
+		if(isnull(operation.operated_bodypart) || operation.operated_bodypart != limb)
+			continue
+		var/datum/surgery_step/next_step = operation.get_surgery_next_step()
+		if(isnull(next_step))
+			continue
+		if(potential_treater.tool_behaviour in next_step.implements)
+			return FALSE
+		if(is_type_in_list(potential_treater, next_step.implements))
+			return FALSE
+
 	// check if we have a valid treatable tool
 	if(potential_treater.tool_behaviour in treatable_tools)
 		return TRUE

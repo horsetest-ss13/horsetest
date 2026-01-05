@@ -13,8 +13,6 @@
 #define FACTION_ASHWALKER "ashwalker"
 /// Bears of all varieties
 #define FACTION_BEAR "bear"
-/// Blood worms
-#define FACTION_BLOOD_WORM "blood_worm"
 /// Megafauna bosses of mining
 #define FACTION_BOSS "boss"
 /// CARPS

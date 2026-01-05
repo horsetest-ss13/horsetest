@@ -17,10 +17,7 @@
 	w_class = WEIGHT_CLASS_SMALL
 	obj_flags = CONDUCTS_ELECTRICITY
 	slot_flags = ITEM_SLOT_BELT
-	custom_materials = list(
-		/datum/material/iron = SMALL_MATERIAL_AMOUNT * 0.5,
-		/datum/material/glass = SMALL_MATERIAL_AMOUNT * 0.2,
-	)
+	custom_materials = list(/datum/material/iron= SMALL_MATERIAL_AMOUNT * 0.5, /datum/material/glass= SMALL_MATERIAL_AMOUNT * 0.2)
 	actions_types = list(/datum/action/item_action/toggle_light)
 	action_slots = ALL
 	light_system = OVERLAY_LIGHT_DIRECTIONAL
@@ -234,7 +231,7 @@
 			. += span_notice_ml("[patient] has [pill_count] pill[pill_count > 1 ? "s" : ""] implanted in [patient.p_their()] teeth.\n")
 
 	//assess any suffocation damage
-	var/hypoxia_status = patient.get_oxy_loss() > 20
+	var/hypoxia_status = patient.getOxyLoss() > 20
 
 	if(patient == user)
 		if(hypoxia_status)
@@ -461,11 +458,7 @@
 	var/trash_type = /obj/item/trash/flare
 	/// If the light source can be extinguished
 	var/can_be_extinguished = FALSE
-	custom_materials = list(
-		/datum/material/iron = SMALL_MATERIAL_AMOUNT * 0.5,
-		/datum/material/plasma = SMALL_MATERIAL_AMOUNT * 0.5,
-		/datum/material/plastic = SMALL_MATERIAL_AMOUNT * 0.5,
-	)
+	custom_materials = list(/datum/material/plastic= SMALL_MATERIAL_AMOUNT * 0.5)
 
 /obj/item/flashlight/flare/Initialize(mapload)
 	. = ..()
@@ -722,7 +715,6 @@
 	slot_flags = null
 	trash_type = /obj/effect/decal/cleanable/ash
 	can_be_extinguished = TRUE
-	custom_materials = list(/datum/material/wood = SMALL_MATERIAL_AMOUNT*0.5)
 
 /obj/item/flashlight/flare/torch/on
 	start_on = TRUE
@@ -734,7 +726,6 @@
 	fuel = INFINITY
 	randomize_fuel = FALSE
 	start_on = TRUE
-	custom_materials = null
 
 /obj/item/flashlight/flare/torch/red
 	color = "#ff0000"
@@ -869,7 +860,6 @@
 	toggle_context = FALSE
 	ignore_base_color = TRUE
 	has_closed_handle = FALSE
-	custom_materials = null
 	/// How much max fuel we have
 	var/max_fuel = 0
 	/// How much oxygen gets added upon cracking the stick. Doesn't actually produce a reaction with the fluid but it does allow for bootleg chemical "grenades"

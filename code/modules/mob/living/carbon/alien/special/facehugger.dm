@@ -24,7 +24,6 @@
 	layer = MOB_LAYER
 	max_integrity = 100
 	slowdown = 2
-	clothing_traits = list(TRAIT_SOFTSPOKEN)
 	var/stat = CONSCIOUS //UNCONSCIOUS is the idle state in this case
 
 	var/sterile = FALSE
@@ -189,9 +188,7 @@
 	if(!sterile)
 		victim.take_bodypart_damage(strength,0) //done here so that humans in helmets take damage
 	if(real && !sterile)
-		victim.Paralyze(1 SECONDS)
-		victim.adjust_confusion(20 SECONDS)
-		victim.Knockdown(10 SECONDS)
+		victim.Knockdown(5 SECONDS)
 	GoIdle() //so it doesn't jump the people that tear it off
 
 	addtimer(CALLBACK(src, PROC_REF(Impregnate), victim), rand(MIN_IMPREGNATION_TIME, MAX_IMPREGNATION_TIME))

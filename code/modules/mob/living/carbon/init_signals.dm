@@ -14,7 +14,6 @@
 	RegisterSignal(src, SIGNAL_ADDTRAIT(TRAIT_VIRUSIMMUNE), PROC_REF(on_virusimmune_trait_gain))
 	RegisterSignal(src, SIGNAL_ADDTRAIT(TRAIT_TOXIMMUNE), PROC_REF(on_toximmune_trait_gain))
 	RegisterSignal(src, SIGNAL_ADDTRAIT(TRAIT_GENELESS), PROC_REF(on_geneless_trait_gain))
-	RegisterSignal(src, SIGNAL_ADDTRAIT(TRAIT_NO_SPLIT_PERSONALITY), PROC_REF(on_no_split_personality_trait_gain))
 
 /**
  * On gain of TRAIT_AGENDER
@@ -65,7 +64,7 @@
 /mob/living/carbon/proc/on_nobreath_trait_gain(datum/source)
 	SIGNAL_HANDLER
 
-	set_oxy_loss(0, updating_health = TRUE, forced = TRUE)
+	setOxyLoss(0, updating_health = TRUE, forced = TRUE)
 	losebreath = 0
 	failed_last_breath = FALSE
 
@@ -120,7 +119,7 @@
 /mob/living/carbon/proc/on_toximmune_trait_gain(datum/source)
 	SIGNAL_HANDLER
 
-	set_tox_loss(0, updating_health = TRUE, forced = TRUE)
+	setToxLoss(0, updating_health = TRUE, forced = TRUE)
 
 /**
  * On gain of TRAIT_GENELLESS
@@ -131,13 +130,3 @@
 	SIGNAL_HANDLER
 
 	dna?.remove_all_mutations()
-
-/**
- * On gain of TRAIT_NO_SPLIT_PERSONALITY
- *
- * This will make the mob lose the split personality trauma if they have it.
- */
-/mob/living/carbon/proc/on_no_split_personality_trait_gain(datum/source)
-	SIGNAL_HANDLER
-
-	cure_trauma_type(/datum/brain_trauma/severe/split_personality, TRAUMA_LIMIT_ABSOLUTE)

@@ -183,6 +183,7 @@
 	if(!(flora_allowed && length(flora_spawn_list_expanded)) && !(features_allowed && length(feature_spawn_list_expanded)) && !(fauna_allowed && length(mob_spawn_list_expanded)))
 		return
 
+
 	for(var/turf/target_turf as anything in target_turfs)
 		// We do the CHECK_TICK here because there's a bunch of continue calls
 		// in this.

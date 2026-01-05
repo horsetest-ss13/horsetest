@@ -18,7 +18,7 @@
 
 /datum/brain_trauma/severe/split_personality/on_gain()
 	var/mob/living/brain_owner = owner
-	if(brain_owner.stat == DEAD || !GET_CLIENT(brain_owner) || istype(get_area(brain_owner), /area/deathmatch) || HAS_TRAIT(brain_owner, TRAIT_NO_SPLIT_PERSONALITY)) //No use assigning people to a corpse or braindead
+	if(brain_owner.stat == DEAD || !GET_CLIENT(brain_owner) || istype(get_area(brain_owner), /area/deathmatch)) //No use assigning people to a corpse or braindead
 		return FALSE
 	. = ..()
 	make_backseats()
@@ -182,7 +182,7 @@
 	to_chat(src, span_warning("You cannot speak, your other self is controlling your body!"))
 	return FALSE
 
-/mob/living/split_personality/emote(act, type_override = NONE, message = null, intentional = FALSE, force_silence = FALSE, forced = FALSE)
+/mob/living/split_personality/emote(act, m_type = null, message = null, intentional = FALSE, force_silence = FALSE, forced = FALSE)
 	return FALSE
 
 ///////////////BRAINWASHING////////////////////
@@ -325,7 +325,7 @@
 	//too drunk to feel anything
 	//if they're to this point, they're likely dying of liver damage
 	//and not accounting for that, the split personality is temporary
-	owner.adjust_stamina_loss(-25)
+	owner.adjustStaminaLoss(-25)
 	duration_in_seconds -= seconds_per_tick
 
 /mob/living/split_personality/blackout

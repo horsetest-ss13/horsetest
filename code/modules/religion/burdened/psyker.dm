@@ -71,7 +71,7 @@
 	if(stat == DEAD || !old_head || !old_brain)
 		return FALSE
 	var/obj/item/bodypart/head/psyker/psyker_head = new()
-	if(!psyker_head.replace_limb(src))
+	if(!psyker_head.replace_limb(src, special = TRUE))
 		return FALSE
 	qdel(old_head)
 	var/obj/item/organ/brain/psyker/psyker_brain = new() /// turns out if you make a flashing monochromatic outline against black background that refreshes on inconsistant intervals, it hurts peoples eyes. Who'da thunk.

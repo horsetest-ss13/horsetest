@@ -27,7 +27,7 @@
 	if(istype(eating, /obj/item/food/golem_food))
 		return
 	source.balloon_alert(source, "minerals only!")
-	return BLOCK_EAT_ATTEMPT
+	return COMSIG_CARBON_BLOCK_EAT
 
 /// Golem stomach cannot process nutriment except from minerals
 /obj/item/organ/stomach/golem/on_life(delta_time, times_fired)

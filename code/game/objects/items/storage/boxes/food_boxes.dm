@@ -48,7 +48,6 @@
 	desc = "Instructions: DO NOT heat in microwave. Product will remove all hostile threats with cutting edge Donk Co. technology."
 	icon_state = "donkpocketboxshell"
 	donktype = /obj/item/ammo_casing/shotgun/flechette/donk
-	storage_type = /datum/storage/box/donk_bullets
 
 /obj/item/storage/box/papersack
 	name = "paper sack"
@@ -59,7 +58,6 @@
 	illustration = null
 	resistance_flags = FLAMMABLE
 	foldable_result = null
-	custom_materials = list(/datum/material/paper = SHEET_MATERIAL_AMOUNT * 1.25)
 	/// A list of all available papersack reskins
 	var/list/papersack_designs = list()
 	///What design from papersack_designs we are currently using.

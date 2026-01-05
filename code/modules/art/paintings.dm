@@ -12,7 +12,6 @@
 	density = TRUE
 	resistance_flags = FLAMMABLE
 	max_integrity = 60
-	custom_materials = list(/datum/material/wood = SHEET_MATERIAL_AMOUNT * 5)
 	var/obj/item/canvas/painting = null
 
 //Adding canvases
@@ -225,7 +224,7 @@
 				return FALSE
 			//I'd have this done inside the signal, but that'd have to be asynced,
 			//while we want the UI to be updated after the color is chosen, not before.
-			var/chosen_color = tgui_color_picker(user, "Pick new color", painting_implement, params["old_color"])
+			var/chosen_color = input(user, "Pick new color", painting_implement, params["old_color"]) as color|null
 			if(!chosen_color || IS_DEAD_OR_INCAP(user) || !user.is_holding(painting_implement))
 				return FALSE
 			SEND_SIGNAL(painting_implement, COMSIG_PAINTING_TOOL_PALETTE_COLOR_CHANGED, chosen_color, params["color_index"])
@@ -259,10 +258,7 @@
 	LAZYREMOVE(zoom_by_observer, user.key)
 
 /obj/item/canvas/proc/finalize(mob/user)
-	if(finalized || painting_metadata.loaded_from_json)
-		return
-	if(!in_range(src, user))
-		user.balloon_alert(user, "too far away!")
+	if(painting_metadata.loaded_from_json || finalized)
 		return
 	if(!try_rename(user))
 		return
@@ -318,7 +314,7 @@
 			if(curator_cut)
 				for(var/datum/bank_account/curator as anything in curator_accounts)
 					curator.adjust_money(curator_cut, "Painting: Patronage cut")
-					curator.bank_card_talk("Cut on patronage received, account now holds [curator.account_balance] [MONEY_SYMBOL].")
+					curator.bank_card_talk("Cut on patronage received, account now holds [curator.account_balance] cr.")
 
 	if(istype(loc, /obj/structure/sign/painting))
 		var/obj/structure/sign/painting/frame = loc
@@ -950,11 +946,11 @@
 	wallframe_type = /obj/item/wallframe/painting/large
 
 /obj/structure/sign/painting/large/Initialize(mapload)
+	. = ..()
 	// Necessary so that the painting is framed correctly by the frame overlay when flipped.
 	ADD_KEEP_TOGETHER(src, INNATE_TRAIT)
 	if(mapload)
 		finalize_size()
-	return ..()
 
 /**
  * This frame is visually put between two wall turfs and it has an icon that's bigger than 32px, and because
@@ -976,9 +972,6 @@
 			bound_height = 64
 		if(EAST)
 			bound_height = 64
-
-/obj/structure/sign/painting/large/get_turfs_to_mount_on()
-	return (!pixel_x && !pixel_y) ? list(get_step(src, dir)) : ..()
 
 /obj/structure/sign/painting/large/frame_canvas(mob/living/user, obj/item/canvas/new_canvas)
 	. = ..()

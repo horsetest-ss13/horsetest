@@ -97,10 +97,6 @@
 	name = "pulse pistol power cell"
 	maxcharge = STANDARD_CELL_CHARGE * 2
 
-/obj/item/stock_parts/power_store/cell/laser_pistol
-	name = "laser pistol power cell"
-	chargerate = STANDARD_CELL_RATE * 0.15
-
 /obj/item/stock_parts/power_store/cell/ninja
 	name = "black power cell"
 	icon_state = "bscell"
@@ -258,7 +254,6 @@
 	custom_materials = null
 	grind_results = null
 	emp_damage_modifier = 0
-	abstract_type = /obj/item/stock_parts/power_store/cell/ethereal
 
 /obj/item/stock_parts/power_store/cell/ethereal/examine(mob/user)
 	. = ..()
