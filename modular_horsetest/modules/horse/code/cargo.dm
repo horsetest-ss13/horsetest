@@ -17,6 +17,33 @@
 	)
 	crate_name = "horse supplements crate"
 
+/datum/supply_pack/critter/horse_tack
+	name = "Horse Tack Crate"
+	desc = "Complete horse equipment set including saddle, bridle, and leg wraps. Available in three colors."
+	cost = CARGO_CRATE_VALUE * 5
+	contains = list(
+		/obj/item/horse_saddle/lazuli,
+		/obj/item/horse_bridle/lazuli,
+		/obj/item/horse_wraps/lazuli,
+	)
+	crate_name = "horse tack crate"
+
+/datum/supply_pack/critter/horse_tack/saguaro
+	name = "Horse Tack Crate (Saguaro)"
+	contains = list(
+		/obj/item/horse_saddle/saguaro,
+		/obj/item/horse_bridle/saguaro,
+		/obj/item/horse_wraps/saguaro,
+	)
+
+/datum/supply_pack/critter/horse_tack/eldorado
+	name = "Horse Tack Crate (Eldorado)"
+	contains = list(
+		/obj/item/horse_saddle/eldorado,
+		/obj/item/horse_bridle/eldorado,
+		/obj/item/horse_wraps/eldorado,
+	)
+
 /datum/supply_pack/service/apple_crate
 	name = "Apple Crate"
 	desc = "Ten apples."

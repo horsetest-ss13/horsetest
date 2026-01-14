@@ -4,11 +4,13 @@ GLOBAL_LIST_EMPTY(horse_holdie_cache)
 	var/horse_name = "Horse"
 	var/horse_gender = MALE
 	var/breed_type = /datum/horse_breed
-	var/body_color = "#8b6f47"
-	var/mane_color = "#4a3625"
+	var/horse_color_variant = "bay"
 	var/temperament = 50
 	var/intelligence = 20
 	var/sspeed = 30
+	var/saddle_type
+	var/bridle_type
+	var/wraps_type
 	var/list/supplement_counts
 	var/stored_time
 	var/stored_by
@@ -22,11 +24,16 @@ GLOBAL_LIST_EMPTY(horse_holdie_cache)
 	horse_gender = horse.gender
 	if(horse.breed)
 		breed_type = horse.breed.type
-	body_color = horse.horsecolors[1]
-	mane_color = horse.horsecolors[2]
+	horse_color_variant = horse.horse_color_variant
 	temperament = horse.temperament
 	intelligence = horse.intelligence
 	sspeed = horse.sspeed
+	if(horse.equipped_saddle)
+		saddle_type = horse.equipped_saddle.type
+	if(horse.equipped_bridle)
+		bridle_type = horse.equipped_bridle.type
+	if(horse.equipped_wraps)
+		wraps_type = horse.equipped_wraps.type
 	if(horse.supplement_counts)
 		supplement_counts = horse.supplement_counts.Copy()
 	stored_by = ckey
@@ -39,13 +46,28 @@ GLOBAL_LIST_EMPTY(horse_holdie_cache)
 	new_horse.name = horse_name
 	new_horse.gender = horse_gender
 	new_horse.breed = get_breed_datum(breed_type)
-	new_horse.horsecolors = list(body_color, mane_color)
+	new_horse.horse_color_variant = horse_color_variant
+	new_horse.icon_state = horse_color_variant
+	new_horse.icon_living = horse_color_variant
+	new_horse.icon_dead = "[horse_color_variant]_dead"
 	new_horse.temperament = temperament
 	new_horse.intelligence = intelligence
 	new_horse.sspeed = sspeed
 	if(supplement_counts)
 		new_horse.supplement_counts = supplement_counts.Copy()
-	new_horse.apply_colour()
+	if(saddle_type)
+		var/obj/item/horse_saddle/saddle = new saddle_type()
+		new_horse.equipped_saddle = saddle
+		saddle.on_horse = TRUE
+	if(bridle_type)
+		var/obj/item/horse_bridle/bridle = new bridle_type()
+		new_horse.equipped_bridle = bridle
+		bridle.on_horse = TRUE
+	if(wraps_type)
+		var/obj/item/horse_wraps/wraps = new wraps_type()
+		new_horse.equipped_wraps = wraps
+		wraps.on_horse = TRUE
+	new_horse.update_appearance(UPDATE_OVERLAYS)
 	new_horse.tamed_points = 0
 	if(new_owner)
 		new_horse.my_owner = WEAKREF(new_owner)
@@ -78,11 +100,13 @@ GLOBAL_LIST_EMPTY(horse_holdie_cache)
 				stored.horse_name = slot_data["name"] || "Horse"
 				stored.horse_gender = slot_data["gender"] || MALE
 				stored.breed_type = text2path(slot_data["breed_type"]) || /datum/horse_breed
-				stored.body_color = slot_data["body_color"] || "#8b6f47"
-				stored.mane_color = slot_data["mane_color"] || "#4a3625"
+				stored.horse_color_variant = slot_data["color_variant"] || "bay"
 				stored.temperament = slot_data["temperament"] || 50
 				stored.intelligence = slot_data["intelligence"] || 20
 				stored.sspeed = slot_data["speed"] || 30
+				stored.saddle_type = text2path(slot_data["saddle_type"])
+				stored.bridle_type = text2path(slot_data["bridle_type"])
+				stored.wraps_type = text2path(slot_data["wraps_type"])
 				stored.supplement_counts = slot_data["supplements"] || list()
 				stored.stored_time = slot_data["stored_time"] || 0
 				stored.stored_by = ckey
@@ -107,11 +131,13 @@ GLOBAL_LIST_EMPTY(horse_holdie_cache)
 				"name" = stored.horse_name,
 				"gender" = stored.horse_gender,
 				"breed_type" = "[stored.breed_type]",
-				"body_color" = stored.body_color,
-				"mane_color" = stored.mane_color,
+				"color_variant" = stored.horse_color_variant,
 				"temperament" = stored.temperament,
 				"intelligence" = stored.intelligence,
 				"speed" = stored.sspeed,
+				"saddle_type" = stored.saddle_type ? "[stored.saddle_type]" : null,
+				"bridle_type" = stored.bridle_type ? "[stored.bridle_type]" : null,
+				"wraps_type" = stored.wraps_type ? "[stored.wraps_type]" : null,
 				"supplements" = stored.supplement_counts,
 				"stored_time" = stored.stored_time
 			)
