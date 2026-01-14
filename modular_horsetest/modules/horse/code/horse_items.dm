@@ -51,7 +51,7 @@
 
 /obj/item/horse_bridle
 	name = "horse bridle"
-	desc = "A bridle for a horse. Helps with control and direction."
+	desc = "A bridle for a horse."
 	icon = 'modular_horsetest/modules/horse/icons/tack.dmi'
 	icon_state = "w_bridle_lazuli"
 	inhand_icon_state = null
