@@ -1,5 +1,5 @@
 /datum/horse_breed
-	var/name = "Mixed Breed"
+	var/name = "Grade Horse" // that's what we be callin em irl
 	var/description = "A horse of mixed or unknown breeding."
 	var/min_temperament = 20
 	var/max_temperament = 60
@@ -13,7 +13,7 @@
 	var/rarity = 5
 /datum/horse_breed/arabian
 	name = "Arabian"
-	description = "An ancient breed known for exceptional intelligence, endurance, and spirit. Highly prized and rare."
+	description = "An ancient breed known for exceptional intelligence, endurance, and spirit. Highly prized."
 	min_temperament = 40  // More spirited
 	max_temperament = 70
 	min_intelligence = 50  // Very smart
@@ -23,7 +23,7 @@
 	ideal_temperament = 55
 	ideal_intelligence = 80
 	ideal_speed = 75
-	rarity = 9  // Very rare
+	rarity = 9  // Very rare -- in reality Arabians are quite common, so we may want to tweak this as we add more breeds
 /datum/horse_breed/thoroughbred
 	name = "Thoroughbred"
 	description = "The premier racing breed, bred for incredible speed and competitive spirit."
@@ -36,7 +36,7 @@
 	ideal_temperament = 65
 	ideal_intelligence = 45
 	ideal_speed = 90
-	rarity = 7  // Fairly rare
+	rarity = 7  // Fairly rare - also not reflective of reality but that's ok
 /datum/horse_breed/percheron
 	name = "Percheron"
 	description = "A large, powerful working breed. Calm and steady, but not particularly fast."
@@ -49,10 +49,10 @@
 	ideal_temperament = 15
 	ideal_intelligence = 35
 	ideal_speed = 20
-	rarity = 3  // Common working horse
+	rarity = 3  // Common working horse - irl these are less common compared to non-draft horses so just keep that in mind as we adjust moving forward
 /datum/horse_breed/mustang
 	name = "Mustang"
-	description = "A wild breed descended from escaped horses. Hardy, independent, and spirited."
+	description = "A feral breed descended from escaped horses. Hardy, independent, and spirited."
 	min_temperament = 45  // Wild spirit
 	max_temperament = 75
 	min_intelligence = 40  // Clever survivors
@@ -68,8 +68,8 @@
 	description = "The most popular breed. Well-balanced, trainable, and versatile."
 	min_temperament = 20  // Calm and trainable
 	max_temperament = 50
-	min_intelligence = 30
-	max_intelligence = 65
+	min_intelligence = 40
+	max_intelligence = 75 // Quarter horses are very intelligent
 	min_speed = 30
 	max_speed = 60
 	ideal_temperament = 30

@@ -37,7 +37,7 @@
 	)
 
 /datum/supply_pack/critter/horse_tack/eldorado
-	name = "Horse Tack Crate (Eldorado)"
+	name = "Horse Tack Crate (El Dorado)"
 	contains = list(
 		/obj/item/horse_saddle/eldorado,
 		/obj/item/horse_bridle/eldorado,
