@@ -6798,4 +6798,6 @@
 #include "modular_horsetest\modules\horse\code\horse.dm"
 #include "modular_horsetest\modules\horse\code\horse_feed.dm"
 #include "modular_horsetest\modules\horse\code\horse_holdie.dm"
+#include "modular_horsetest\modules\horse\code\horse_items.dm"
+#include "modular_horsetest\modules\revolvers\code\revolvers.dm"
 // END_INCLUDE

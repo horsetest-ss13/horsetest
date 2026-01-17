@@ -1,6 +1,7 @@
 /mob/living/basic/horse
 	name = "horse"
 	desc = "A majestic equine creature. Larger and stronger than a pony."
+	icon = 'modular_horsetest/modules/horse/icons/horse.dmi'
 	icon_state = "pony"
 	icon_living = "pony"
 	icon_dead = "pony_dead"
@@ -26,8 +27,10 @@
 	ai_controller = /datum/ai_controller/basic_controller/horse
 	var/unique_tamer = FALSE
 	var/datum/weakref/my_owner
-	greyscale_config = /datum/greyscale_config/pony
-	var/list/horsecolors = list("#8b6f47", "#4a3625")
+	var/horse_color_variant = "bay" // Default color variant
+	var/obj/item/horse_saddle/equipped_saddle
+	var/obj/item/horse_bridle/equipped_bridle
+	var/obj/item/horse_wraps/equipped_wraps
 	var/sperm = list()
 	var/eggs = list()
 	var/datum/horse_breed/breed
@@ -66,8 +69,7 @@
 	temperament = rand(breed.min_temperament, breed.max_temperament)
 	intelligence = rand(breed.min_intelligence, breed.max_intelligence)
 	sspeed = rand(breed.min_speed, breed.max_speed)
-	horsecolors = breed.breed_colors.Copy()
-	apply_colour()
+	set_random_color_variant()
 	AddElement(/datum/element/pet_bonus, "whinny")
 	AddElement(/datum/element/ai_retaliate)
 	AddElement(/datum/element/ai_flee_while_injured)
@@ -148,6 +150,99 @@
 	else
 		if(feeder)
 			to_chat(feeder, span_warning("[src]'s [supplement.boost_stat] is already at its limit."))
+
+/mob/living/basic/horse/proc/equip_item(obj/item/equipment, mob/living/user)
+	if(istype(equipment, /obj/item/horse_saddle))
+		return equip_saddle(equipment, user)
+	else if(istype(equipment, /obj/item/horse_bridle))
+		return equip_bridle(equipment, user)
+	else if(istype(equipment, /obj/item/horse_wraps))
+		return equip_wraps(equipment, user)
+	return FALSE
+
+/mob/living/basic/horse/proc/equip_saddle(obj/item/horse_saddle/saddle, mob/living/user)
+	if(equipped_saddle)
+		to_chat(user, span_warning("[src] already has a saddle!"))
+		return FALSE
+	if(!user.transferItemToLoc(saddle, src))
+		return FALSE
+	equipped_saddle = saddle
+	saddle.on_horse = TRUE
+	visible_message(span_notice("[user] places [saddle] on [src]."))
+	update_appearance(UPDATE_OVERLAYS)
+	return TRUE
+
+/mob/living/basic/horse/proc/equip_bridle(obj/item/horse_bridle/bridle, mob/living/user)
+	if(equipped_bridle)
+		to_chat(user, span_warning("[src] already has a bridle!"))
+		return FALSE
+	if(!user.transferItemToLoc(bridle, src))
+		return FALSE
+	equipped_bridle = bridle
+	bridle.on_horse = TRUE
+	visible_message(span_notice("[user] places [bridle] on [src]."))
+	update_appearance(UPDATE_OVERLAYS)
+	return TRUE
+
+/mob/living/basic/horse/proc/equip_wraps(obj/item/horse_wraps/wraps, mob/living/user)
+	if(equipped_wraps)
+		to_chat(user, span_warning("[src] already has leg wraps!"))
+		return FALSE
+	if(!user.transferItemToLoc(wraps, src))
+		return FALSE
+	equipped_wraps = wraps
+	wraps.on_horse = TRUE
+	visible_message(span_notice("[user] places [wraps] on [src]."))
+	update_appearance(UPDATE_OVERLAYS)
+	return TRUE
+
+/mob/living/basic/horse/proc/unequip_item(equipment_type, mob/living/user)
+	switch(equipment_type)
+		if("saddle")
+			if(!equipped_saddle)
+				to_chat(user, span_warning("[src] doesn't have a saddle equipped!"))
+				return FALSE
+			var/obj/item/horse_saddle/saddle = equipped_saddle
+			equipped_saddle = null
+			saddle.on_horse = FALSE
+			user.put_in_hands(saddle)
+			visible_message(span_notice("[user] removes [saddle] from [src]."))
+		if("bridle")
+			if(!equipped_bridle)
+				to_chat(user, span_warning("[src] doesn't have a bridle equipped!"))
+				return FALSE
+			var/obj/item/horse_bridle/bridle = equipped_bridle
+			equipped_bridle = null
+			bridle.on_horse = FALSE
+			user.put_in_hands(bridle)
+			visible_message(span_notice("[user] removes [bridle] from [src]."))
+		if("wraps")
+			if(!equipped_wraps)
+				to_chat(user, span_warning("[src] doesn't have leg wraps equipped!"))
+				return FALSE
+			var/obj/item/horse_wraps/wraps = equipped_wraps
+			equipped_wraps = null
+			wraps.on_horse = FALSE
+			user.put_in_hands(wraps)
+			visible_message(span_notice("[user] removes [wraps] from [src]."))
+		else
+			return FALSE
+	update_appearance(UPDATE_OVERLAYS)
+	return TRUE
+
+/mob/living/basic/horse/update_overlays()
+	. = ..()
+	// Equipment overlays in order: wraps (bottom), saddle (middle), bridle (top)
+	if(equipped_wraps)
+		var/mutable_appearance/wraps_overlay = mutable_appearance(equipped_wraps.icon, equipped_wraps.icon_state)
+		. += wraps_overlay
+	if(equipped_saddle)
+		var/mutable_appearance/saddle_overlay = mutable_appearance(equipped_saddle.icon, equipped_saddle.icon_state)
+		. += saddle_overlay
+	if(equipped_bridle)
+		var/mutable_appearance/bridle_overlay = mutable_appearance(equipped_bridle.icon, equipped_bridle.icon_state)
+		. += bridle_overlay
+
 /mob/living/basic/horse/proc/on_prebuckle_taming(mob/source, mob/living/buckler, force, buckle_mob_flags)
 	SIGNAL_HANDLER
 	if(tamed_points <= 0)
@@ -269,10 +364,19 @@
 	foal.intelligence = clamp(foal.intelligence, 0, foal.max_intelligence)
 	foal.sspeed = round((sperm_data.sspeed + egg_data.sspeed) / 2 + rand(-5, 5))
 	foal.sspeed = clamp(foal.sspeed, 0, foal.max_speed)
-	var/list/possible_colors = sperm_data.colors + egg_data.colors
-	foal.horsecolors = list(pick(possible_colors), pick(possible_colors))
-	foal.apply_colour()
 	foal.gender = pick(MALE, FEMALE)
+	// Inherit color variant from one of the parents
+	if(father_horse && mother_horse)
+		foal.horse_color_variant = pick(father_horse.horse_color_variant, mother_horse.horse_color_variant)
+	else if(father_horse)
+		foal.horse_color_variant = father_horse.horse_color_variant
+	else if(mother_horse)
+		foal.horse_color_variant = mother_horse.horse_color_variant
+	else
+		foal.set_random_color_variant()
+	foal.icon_state = foal.horse_color_variant
+	foal.icon_living = foal.horse_color_variant
+	foal.icon_dead = "[foal.horse_color_variant]_dead"
 	foal.family_tree = new /datum/horse_family_tree(father_horse, mother_horse)
 	if(father_horse?.family_tree)
 		father_horse.family_tree.add_child(foal)
@@ -313,6 +417,16 @@
 			. += span_notice("[src] is fully tamed.")
 		else
 			. += span_info("[src] still needs to be tamed. ([tamed_points] points remaining)")
+	// Show equipped items
+	if(equipped_saddle || equipped_bridle || equipped_wraps)
+		. += span_info("<b>Equipped items:</b>")
+		if(equipped_saddle)
+			. += span_info("- [equipped_saddle]")
+		if(equipped_bridle)
+			. += span_info("- [equipped_bridle]")
+		if(equipped_wraps)
+			. += span_info("- [equipped_wraps]")
+		. += span_notice("Alt-click to remove equipment.")
 /mob/living/basic/horse/Topic(href, href_list)
 	. = ..()
 	if(href_list["mate"])
@@ -330,6 +444,35 @@
 	if(get_dist(src, user) > 1)
 		to_chat(user, span_warning("You need to be closer to [src]!"))
 		return CLICK_ACTION_BLOCKING
+
+	// Check if there's any equipment to remove
+	if(equipped_saddle || equipped_bridle || equipped_wraps)
+		var/list/options = list()
+		if(equipped_saddle)
+			options["Remove Saddle"] = "saddle"
+		if(equipped_bridle)
+			options["Remove Bridle"] = "bridle"
+		if(equipped_wraps)
+			options["Remove Leg Wraps"] = "wraps"
+		options["Open Horse Menu"] = "menu"
+		options["Cancel"] = "cancel"
+
+		var/choice = input(user, "What would you like to do?", "Horse Equipment") as null|anything in options
+		if(!choice || choice == "Cancel")
+			return CLICK_ACTION_SUCCESS
+
+		var/action = options[choice]
+		if(action == "menu")
+			if(tamed_points == null || tamed_points > 0)
+				to_chat(user, span_warning("[src] is not tamed yet! Try feeding it apples, carrots, or sugarcane."))
+				return CLICK_ACTION_BLOCKING
+			open_horse_menu(user)
+			return CLICK_ACTION_SUCCESS
+		else
+			unequip_item(action, user)
+			return CLICK_ACTION_SUCCESS
+
+	// No equipment, proceed with normal menu
 	if(tamed_points == null || tamed_points > 0)
 		to_chat(user, span_warning("[src] is not tamed yet! Try feeding it apples, carrots, or sugarcane."))
 		return CLICK_ACTION_BLOCKING
@@ -410,10 +553,18 @@
 	var/mob/living/basic/horse/chosen_mate = input(user, "Choose a mate for [src]:", "Horse Breeding") as null|anything in potential_mates
 	if(chosen_mate)
 		mate_with(chosen_mate)
-/mob/living/basic/horse/proc/apply_colour()
-	if(!greyscale_config)
-		return
-	set_greyscale(colors = horsecolors)
+/mob/living/basic/horse/proc/set_random_color_variant()
+	// List of all available horse color variants (excluding syndicate)
+	var/static/list/color_variants = list(
+		"black", "bay", "bay_wild", "chestnut", "sorrel", "flaxen", "palomino",
+		"cremello", "chestnut_pinto", "grey_pinto", "grulla", "dun_bay", "dun_red",
+		"silver_dapple", "grey_dapple", "bay_blanket", "chestnut_blanket",
+		"roan_blue", "roan_red", "onlinegirlfriend"
+	)
+	horse_color_variant = pick(color_variants)
+	icon_state = horse_color_variant
+	icon_living = horse_color_variant
+	icon_dead = "[horse_color_variant]_dead"
 /mob/living/basic/horse/proc/whinny_angrily()
 	manual_emote("whinnies ANGRILY!")
 	playsound(src, pick(list(
@@ -453,19 +604,16 @@
 	var/temperament
 	var/intelligence
 	var/sspeed
-	var/list/colors = list()
 /datum/horse_genetics/New(mob/living/basic/horse/parent)
 	if(parent)
 		temperament = parent.temperament
 		intelligence = parent.intelligence
 		sspeed = parent.sspeed
-		colors = parent.horsecolors.Copy()
 /datum/horse_genetics/proc/copy()
 	var/datum/horse_genetics/new_genetics = new()
 	new_genetics.temperament = temperament
 	new_genetics.intelligence = intelligence
 	new_genetics.sspeed = sspeed
-	new_genetics.colors = colors.Copy()
 	return new_genetics
 /datum/horse_genetics/proc/mutate()
 	if(prob(10))
@@ -606,15 +754,17 @@
 	adult.temperament = temperament
 	adult.intelligence = intelligence
 	adult.sspeed = sspeed
-	adult.horsecolors = horsecolors.Copy()
 	adult.gender = gender
+	adult.horse_color_variant = horse_color_variant
+	adult.icon_state = horse_color_variant
+	adult.icon_living = horse_color_variant
+	adult.icon_dead = "[horse_color_variant]_dead"
 	adult.tamed_points = tamed_points
 	adult.my_owner = my_owner
 	adult.name = name // Preserve the foal's name
 	adult.family_tree = family_tree
 	if(my_owner)
 		adult.unique_tamer = unique_tamer
-	adult.apply_colour()
 	adult.generate_genetics()
 	adult.forceMove(loc)
 	qdel(src)
