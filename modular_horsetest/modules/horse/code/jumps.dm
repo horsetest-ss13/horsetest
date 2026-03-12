@@ -2,7 +2,7 @@
 
 /// A barrier that can be jumped over by a rider on a sufficiently fast horse. (To be changed to strength later)
 /obj/structure/barricade/horse_jump
-	name = "crossrail jump" // the simplest of jumps
+	name = "crossrail" // the simplest of jumps
 	desc = "A barrier designed to be jumped over on horseback. This one looks incredibly easy to clear."
 	icon = 'modular_horsetest/modules/horse/icons/jumps.dmi'
 	icon_state = "crossrail"
@@ -34,6 +34,8 @@
 		visible_message(span_notice("[mount] leaps over [src]!"))
 	playsound(src, 'sound/mobs/non-humanoids/pony/whinny01.ogg', 50, vary = TRUE)
 		return TRUE
+
+/obj/structure/barricade/horse_jump/crossrail	// exists solely to make admin spawning easier
 
 /obj/structure/barricade/horse_jump/vertical
 	name = "vertical jump"

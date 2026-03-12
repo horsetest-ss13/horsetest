@@ -17,31 +17,34 @@
 	)
 	crate_name = "horse supplements crate"
 
-/datum/supply_pack/critter/horse_tack
-	name = "Horse Tack Crate"
-	desc = "Complete horse equipment set including saddle, bridle, and leg wraps. Available in three colors."
+/datum/supply_pack/critter/tack/western
+	name = "Western Tack Crate (El Dorado)"
+	desc = "Complete western tack set including saddle, bridle, and leg wraps. This one is the El Dorado set."
 	cost = CARGO_CRATE_VALUE * 5
 	contains = list(
-		/obj/item/horse_saddle/lazuli,
-		/obj/item/horse_bridle/lazuli,
-		/obj/item/horse_wraps/lazuli,
-	)
-	crate_name = "horse tack crate"
+		/obj/item/horse_saddle/western/eldorado,
+		/obj/item/horse_bridle/western/eldorado,
+		/obj/item/horse_wraps/western/eldorado,
 
-/datum/supply_pack/critter/horse_tack/saguaro
-	name = "Horse Tack Crate (Saguaro)"
+	)
+	crate_name = "tack crate"
+
+/datum/supply_pack/critter/tack/western/saguaro
+	name = "Western Tack Crate (Saguaro)"
+	desc = "Complete western tack set including saddle, bridle, and leg wraps. This one is the Saguaro set."
 	contains = list(
-		/obj/item/horse_saddle/saguaro,
-		/obj/item/horse_bridle/saguaro,
-		/obj/item/horse_wraps/saguaro,
+		/obj/item/horse_saddle/western/saguaro,
+		/obj/item/horse_bridle/western/saguaro,
+		/obj/item/horse_wraps/western/saguaro,
 	)
 
-/datum/supply_pack/critter/horse_tack/eldorado
-	name = "Horse Tack Crate (El Dorado)"
+/datum/supply_pack/critter/tack/western/lazuli
+	name = "Western Tack Crate (Lazuli)"
+	desc = "Complete western tack set including saddle, bridle, and leg wraps. This one is the Lazuli set."
 	contains = list(
-		/obj/item/horse_saddle/eldorado,
-		/obj/item/horse_bridle/eldorado,
-		/obj/item/horse_wraps/eldorado,
+		/obj/item/horse_saddle/western/lazuli,
+		/obj/item/horse_bridle/western/lazuli,
+		/obj/item/horse_wraps/western/lazuli,
 	)
 
 /datum/supply_pack/service/apple_crate

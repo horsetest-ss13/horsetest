@@ -202,4 +202,4 @@
 /obj/item/horse_wraps/english/summertime
 	name = "Summertime wraps"
 	icon_state = "e_wraps_summertime"
-	desc = "Bright and beachy leg wraps for a horse. Provides protection and support.""
+	desc = "Bright and beachy leg wraps for a horse. Provides protection and support."
