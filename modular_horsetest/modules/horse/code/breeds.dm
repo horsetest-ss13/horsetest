@@ -23,7 +23,7 @@
 
 
 /datum/horse_breed/akhalteke
-	name = "Akhal Teke"
+	name = "Akhal-Teke"
 	description = "A slender riding horse with a distinctive metallic sheen. This breed is adapted to desert environments."
 	min_temperament = 40
 	max_temperament = 70
