@@ -113,9 +113,6 @@
 	///Sorry, no spider+corgi buttbabies.
 	var/animal_species
 
-	///Simple_animal access.
-	///Innate access uses an internal ID card.
-	var/obj/item/card/id/access_card = null
 	///If the mob can be spawned with a gold slime core. HOSTILE_SPAWN are spawned with plasma, FRIENDLY_SPAWN are spawned with blood.
 	var/gold_core_spawnable = NO_SPAWN
 
@@ -217,7 +214,6 @@
 		adjust_stamina_loss(-stamina_recovery * seconds_per_tick, FALSE, TRUE)
 
 /mob/living/simple_animal/Destroy()
-	QDEL_NULL(access_card)
 	GLOB.simple_animals[AIStatus] -= src
 	SSnpcpool.currentrun -= src
 
@@ -230,8 +226,6 @@
 			. += span_deadsay("Upon closer examination, [p_they()] appear[p_s()] to be asleep.")
 		else
 			. += span_deadsay("Upon closer examination, [p_they()] appear[p_s()] to be dead.")
-	if(access_card)
-		. += "There appears to be [icon2html(access_card, user)] \a [access_card] pinned to [p_them()]."
 
 /mob/living/simple_animal/update_stat()
 	if(HAS_TRAIT(src, TRAIT_GODMODE))
@@ -477,24 +471,9 @@
 			return
 	return ..()
 
-//Will always check hands first, because access_card is internal to the mob and can't be removed or swapped.
-/mob/living/simple_animal/get_idcard(hand_first)
-	return (..() || access_card)
-
 /mob/living/simple_animal/put_in_hands(obj/item/I, del_on_fail = FALSE, merge_stacks = TRUE, ignore_animation = TRUE)
 	. = ..()
 	update_held_items()
-
-/mob/living/simple_animal/update_held_items()
-	. = ..()
-	if(!client || !hud_used || hud_used.hud_version == HUD_STYLE_NOHUD)
-		return
-	var/turf/our_turf = get_turf(src)
-	for(var/obj/item/I in held_items)
-		var/index = get_held_index_of_item(I)
-		SET_PLANE(I, ABOVE_HUD_PLANE, our_turf)
-		I.screen_loc = ui_hand_position(index)
-		client.screen |= I
 
 //ANIMAL RIDING
 

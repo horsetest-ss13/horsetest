@@ -41,6 +41,7 @@
 	new /obj/item/circuitboard/machine/techfab/department/service(src)
 	new /obj/item/storage/photo_album/hop(src)
 	new /obj/item/storage/lockbox/medal/hop(src)
+	new /obj/item/storage/box/stamps(src)
 
 /obj/structure/closet/secure_closet/hop/populate_contents_immediate()
 	new /obj/item/gun/energy/e_gun(src)
@@ -187,6 +188,9 @@
 	anchored = TRUE
 	req_one_access = list(ACCESS_BRIG)
 	var/id = null
+
+/obj/structure/closet/secure_closet/brig/holodeck
+	req_one_access = COMMON_ACCESS
 
 /obj/structure/closet/secure_closet/brig/genpop
 	name = "genpop storage locker"

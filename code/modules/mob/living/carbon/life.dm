@@ -13,6 +13,9 @@
 
 	if(HAS_TRAIT(src, TRAIT_STASIS))
 		. = ..()
+		if(QDELETED(src))
+			return
+
 		reagents?.handle_stasis_chems(src, seconds_per_tick)
 	else
 		//Reagent processing needs to come before breathing, to prevent edge cases.
@@ -26,16 +29,11 @@
 		if(.) //not dead
 			handle_blood(seconds_per_tick)
 
-		if(stat != DEAD)
+		if(stat != DEAD) // still not dead (blood could have changed that)
+			for(var/key in mind?.addiction_points)
+				GLOB.addictions[key].process_addiction(src, seconds_per_tick)
 			handle_brain_damage(seconds_per_tick)
 
-	if(stat != DEAD)
-		handle_bodyparts(seconds_per_tick)
-
-	if(. && mind) //. == not dead
-		for(var/key in mind.addiction_points)
-			var/datum/addiction/addiction = SSaddiction.all_addictions[key]
-			addiction.process_addiction(src, seconds_per_tick)
 	if(stat != DEAD)
 		return TRUE
 
@@ -82,8 +80,10 @@
 
 	var/datum/gas_mixture/breath
 
-	if(!get_organ_slot(ORGAN_SLOT_BREATHING_TUBE))
-		if(health <= HEALTH_THRESHOLD_FULLCRIT || (pulledby?.grab_state >= GRAB_KILL) || (lungs?.organ_flags & ORGAN_FAILING))
+	if(lungs?.organ_flags & ORGAN_FAILING)
+		losebreath++
+	else if(!get_organ_slot(ORGAN_SLOT_BREATHING_TUBE))
+		if(health <= HEALTH_THRESHOLD_FULLCRIT || pulledby?.grab_state >= GRAB_KILL)
 			losebreath++  //You can't breath at all when in critical or when being choked, so you're going to miss a breath
 
 		else if(health <= crit_threshold)
@@ -121,18 +121,12 @@
 				loc_as_obj.handle_internal_lifeform(src,0)
 
 	if(check_breath(breath) && is_on_internals)
-		try_breathing_sound(breath)
+		// successful breath from internals, try to play the breathing sound
+		if(!HAS_TRAIT(src, TRAIT_DEAF) && client?.prefs?.read_preference(/datum/preference/toggle/sound_breathing))
+			breathing_loop.start()
 
 	if(breath)
 		loc.assume_air(breath)
-
-//Tries to play the carbon a breathing sound when using internals, also invokes check_breath
-/mob/living/carbon/proc/try_breathing_sound(breath)
-	var/should_be_on =  canon_client?.prefs?.read_preference(/datum/preference/toggle/sound_breathing)
-	if(should_be_on && !breathing_loop.timer_id && canon_client?.mob.can_hear())
-		breathing_loop.start()
-	else if((!should_be_on && breathing_loop.timer_id) || !canon_client?.mob.can_hear())
-		breathing_loop.stop()
 
 /mob/living/carbon/proc/has_smoke_protection()
 	if(HAS_TRAIT(src, TRAIT_NOBREATH))
@@ -486,8 +480,18 @@
 	if(blood_type.reagent_type != chem.type)
 		return
 
+	var/cached_blood_volume = get_blood_volume()
+
 	var/blood_added = adjust_blood_volume(round(reac_volume, CHEMICAL_VOLUME_ROUNDING))
 	reagents.remove_reagent(chem.type, blood_added)
+
+	if(chem.data?[BLOOD_DATA_SYNTH_CONTENT] && !IS_BLOOD_ALWAYS_SYNTHETIC(src))
+		var/added_synth_volume = blood_added * chem.data[BLOOD_DATA_SYNTH_CONTENT]
+		var/existing_synth_volume = cached_blood_volume * get_blood_synth_content()
+
+		if (added_synth_volume != 0 || existing_synth_volume != 0)
+			// A simple weighted average that simplifies down to "total synth volume / total blood volume" i.e. "how much of our blood is synthetic"
+			AddComponent(/datum/component/synth_blood, (added_synth_volume + existing_synth_volume) / (blood_added + cached_blood_volume))
 
 	if(chem.data?["blood_type"])
 		var/datum/blood_type/donor_type = chem.data["blood_type"]
@@ -496,10 +500,6 @@
 			return COMPONENT_NO_EXPOSE_REAGENTS
 
 	return COMPONENT_NO_EXPOSE_REAGENTS
-
-/mob/living/carbon/proc/handle_bodyparts(seconds_per_tick)
-	for(var/obj/item/bodypart/limb as anything in bodyparts)
-		. |= limb.on_life(seconds_per_tick)
 
 /mob/living/carbon/proc/handle_organs(seconds_per_tick)
 	if(stat == DEAD)
@@ -522,48 +522,20 @@
 		if(organ?.owner) // This exist mostly because reagent metabolization can cause organ reshuffling
 			organ.on_life(seconds_per_tick)
 
-/mob/living/carbon/handle_diseases(seconds_per_tick)
-	for(var/datum/disease/disease as anything in diseases)
-		if(QDELETED(disease)) //Got cured/deleted while the loop was still going.
-			continue
-		if(stat != DEAD || disease.process_dead)
-			disease.stage_act(seconds_per_tick)
+/**
+ * Returns a multiplier representing how effectively this mob can regenerate blood
+ *
+ * A return value of 0 means the mob cannot regenerate blood at all. (missing heart or the heart has stopped or is failing)
+ * Mobs that do not require a heart always return 1, as their blood regeneration is unaffected by heart status.
+ */
+/mob/living/carbon/proc/get_heart_blood_regeneration_multiplier()
+	if(!needs_heart())
+		return 1
+	var/obj/item/organ/heart/heart = get_organ_slot(ORGAN_SLOT_HEART)
+	if(isnull(heart))
+		return 0
 
-/mob/living/carbon/handle_mutations(time_since_irradiated, seconds_per_tick)
-	if(!LAZYLEN(dna?.temporary_mutations))
-		return
-
-	for(var/mut, mut_data in dna.temporary_mutations)
-		if(mut_data < world.time)
-			if(!LAZYLEN(dna.previous))
-				continue
-			if(mut == UI_CHANGED)
-				if(dna.previous["UI"])
-					dna.unique_identity = merge_text(dna.unique_identity,dna.previous["UI"])
-					updateappearance(mutations_overlay_update=1)
-					dna.previous.Remove("UI")
-				LAZYREMOVE(dna.temporary_mutations, mut)
-				continue
-			if(mut == UF_CHANGED)
-				if(dna.previous["UF"])
-					dna.unique_features = merge_text(dna.unique_features,dna.previous["UF"])
-					updateappearance(mutcolor_update=1, mutations_overlay_update=1)
-					dna.previous.Remove("UF")
-				LAZYREMOVE(dna.temporary_mutations, mut)
-				continue
-			if(mut == UE_CHANGED)
-				if(dna.previous["name"])
-					real_name = dna.previous["name"]
-					name = real_name
-					dna.previous.Remove("name")
-				if(dna.previous["UE"])
-					dna.unique_enzymes = dna.previous["UE"]
-					dna.previous.Remove("UE")
-				if(dna.previous["blood_type"])
-					set_blood_type(dna.previous["blood_type"])
-					dna.previous.Remove("blood_type")
-				LAZYREMOVE(dna.temporary_mutations, mut)
-				continue
+	return heart.get_blood_regeneration_multiplier()
 
 /**
  * Handles calling metabolization for dead people.

@@ -638,3 +638,25 @@
 		mood_change = 0
 		description = "I just got coated in blood. Fascinating!"
 		return
+	if(IS_DESENSITIZED(owner))
+		mood_change *= 0.5
+
+/datum/mood_event/teetotal_hangover
+	description = "What a disgraceful display! This is what happens when one indulges in alcohol!"
+	mood_change = -4
+	timeout = 10 MINUTES
+
+/datum/mood_event/normal_hangover
+	description = "Ugh, what a night."
+	mood_change = 0
+	timeout = 10 MINUTES
+
+/datum/mood_event/jabbed_with_tester
+	description = "Man, getting jabbed with that thing really sucked."
+	mood_change = -4
+	timeout = 5 MINUTES
+
+/datum/mood_event/gizmo_negative
+	description = "I hear a voice whispering, and I don't like what it says."
+	mood_change = -3
+	timeout = 30 SECONDS

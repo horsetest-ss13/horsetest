@@ -246,6 +246,7 @@
 	instability = NEGATIVE_STABILITY_MAJOR // mmmonky
 	remove_on_aheal = FALSE
 	locked = TRUE //Species specific, keep out of actual gene pool
+	warn_admins_on_inject = TRUE
 	var/datum/species/original_species = /datum/species/human
 	var/original_name
 
@@ -533,6 +534,7 @@
 	difficulty = 12 //pretty good for traitors
 	quality = NEGATIVE //holy shit no eyes or tongue or ears
 	text_gain_indication = span_warning("Something feels off.")
+	warn_admins_on_inject = TRUE
 
 /datum/mutation/headless/on_acquiring()
 	. = ..()
@@ -701,7 +703,9 @@
 /datum/mutation/inexorable/on_life(seconds_per_tick)
 	if(owner.health > owner.crit_threshold || owner.stat != CONSCIOUS || HAS_TRAIT(owner, TRAIT_STASIS))
 		return
-	// Gives you 30 seconds of being in soft crit... give or take
+	if(HAS_TRAIT(owner, TRAIT_NOCRITDAMAGE) && owner.health <= owner.hardcrit_threshold + 10)
+		return
+	// Gives you 30 seconds of being in fake soft crit... give or take
 	if(HAS_TRAIT(owner, TRAIT_TOXIMMUNE) || HAS_TRAIT(owner, TRAIT_TOXINLOVER))
 		owner.adjust_brute_loss(1 * seconds_per_tick * GET_MUTATION_SYNCHRONIZER(src), forced = TRUE)
 	else
