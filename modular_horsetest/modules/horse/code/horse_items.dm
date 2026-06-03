@@ -55,12 +55,12 @@
 /obj/item/horse_saddle/english/seafoam
 	name = "Seafoam saddle"
 	icon_state = "e_saddle_seafoam"
-	desc = "A lightweight, teal English saddle with a matching blanket."
+	desc = "A lightweight English saddle with a teal blanket."
 
 /obj/item/horse_saddle/english/summertime
 	name = "Summertime saddle"
 	icon_state = "e_saddle_summertime"
-	desc = "An ocean-blue English saddle with a beachy striped blanket."
+	desc = "An lightweight English saddle with a beachy striped blanket."
 
 /obj/item/horse_bridle
 	name = "bridle"
@@ -80,11 +80,11 @@
 	return ITEM_INTERACT_BLOCKING
 
 /obj/item/horse_bridle/western/
-	name = "western-style bridle"
+	name = "western bridle"
 	// all the western-specific bridle stuff would go here
 
 /obj/item/horse_bridle/english/
-	name = "english-style bridle"
+	name = "English bridle"
 	// all the english-specific bridle stuff would go here
 
 /obj/item/horse_bridle/western/heather
@@ -110,7 +110,7 @@
 /obj/item/horse_bridle/western/undercover
 	name = "Undercover bridle"
 	icon_state = "w_bridle_undercover"
-	desc = "A flecktarn western bridle for the stealthy horse."
+	desc = "A flecktarn western bridle - for the stealthy horse."
 
 /obj/item/horse_bridle/english/insignia
 	name = "Insignia bridle"
@@ -153,10 +153,10 @@
 	// all the western-specific wraps stuff would go here
 
 /obj/item/horse_wraps/english/
-	// all the english-specific wraps stuff would go here
+	// all the English-specific wraps stuff would go here
 
-// Leg wraps don't really have the western/english split that other tack does
-// But since these are matching sets, we might want to sort by western and english on the market
+// Leg wraps don't really have the western/English split that other tack does
+// But since these are matching sets, we might want to sort by western and English on the market
 // Also could have different stat bonuses, but any difference should be very slight for wraps
 
 /obj/item/horse_wraps/western/heather
@@ -202,4 +202,4 @@
 /obj/item/horse_wraps/english/summertime
 	name = "Summertime wraps"
 	icon_state = "e_wraps_summertime"
-	desc = "Bright and beachy leg wraps for a horse. Provides protection and support.""
+	desc = "Bright and beachy leg wraps for a horse. Provides protection and support."
