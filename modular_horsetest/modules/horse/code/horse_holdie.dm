@@ -148,7 +148,7 @@ GLOBAL_LIST_EMPTY(horse_holdie_cache)
 	return TRUE
 /obj/structure/horse_holdie
 	name = "horse holdie"
-	desc = "A strange device that can store horses between shifts. Has 3 storage slots linked to your ID."
+	desc = "A strange device that can store horses between shifts. Has 3 storage slots."
 	icon = 'icons/obj/wallmounts.dmi'
 	icon_state = "noticeboard"
 	density = FALSE
