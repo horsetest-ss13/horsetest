@@ -1,4 +1,4 @@
-#define MAX_HORSE_SLOTS 3
+#define MAX_HORSE_SLOTS 6
 GLOBAL_LIST_EMPTY(horse_holdie_cache)
 /datum/stored_horse
 	var/horse_name = "Horse"
@@ -148,7 +148,7 @@ GLOBAL_LIST_EMPTY(horse_holdie_cache)
 	return TRUE
 /obj/structure/horse_holdie
 	name = "horse holdie"
-	desc = "A strange device that can store horses between shifts. Has 3 storage slots."
+	desc = "A strange device that can store horses between shifts. Has 6 storage slots."
 	icon = 'icons/obj/wallmounts.dmi'
 	icon_state = "noticeboard"
 	density = FALSE
