@@ -68,6 +68,8 @@ GLOBAL_LIST_EMPTY(horse_competition_history)
 	var/mob/living/horse_owner = horse.my_owner?.resolve()
 	if(horse_owner != owner)
 		return list("success" = FALSE, "message" = "You don't own [horse.name]!")
+	if(!horse.can_be_used())
+		return list("success" = FALSE, "message" = "[horse.name] is too old to compete!")
 	var/datum/bank_account/account = owner.get_bank_account()
 	if(!account)
 		return list("success" = FALSE, "message" = "You need a bank account to enter!")
@@ -273,7 +275,9 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/structure/horse_competition_board, 32)
 				"breed" = horse.breed?.name || "Unknown",
 				"speed" = horse.sspeed,
 				"intelligence" = horse.intelligence,
-				"temperament" = horse.temperament
+				"temperament" = horse.temperament,
+				"age" = horse.age,
+				"canUse" = horse.can_be_used()
 			))
 	data["userHorses"] = user_horses
 	return data

@@ -663,6 +663,9 @@ type HorseData = {
   maxIntelligence: number;
   speed: number;
   maxSpeed: number;
+  age: number;
+  retired: boolean;
+  maxAge: number;
   pregnant: boolean;
   canBreed: boolean;
   breed?: BreedInfo;
@@ -686,6 +689,9 @@ export const HorseMenu = (props) => {
     maxIntelligence,
     speed,
     maxSpeed,
+    age,
+    retired,
+    maxAge,
     pregnant,
     canBreed,
     breed,
@@ -743,6 +749,14 @@ export const HorseMenu = (props) => {
                     {isOwner && ' (You)'}
                   </LabeledList.Item>
                 )}
+                <LabeledList.Item label="Age">
+                  {age} / {maxAge} years
+                  {retired && (
+                    <Box as="span" color="average" ml={1}>
+                      (Retired)
+                    </Box>
+                  )}
+                </LabeledList.Item>
                 <LabeledList.Item label="Health">
                   <ProgressBar
                     value={health}

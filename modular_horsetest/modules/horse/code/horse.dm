@@ -1,3 +1,7 @@
+#define HORSE_RETIREMENT_AGE 30
+#define HORSE_WILD_AGE_MIN 10
+#define HORSE_WILD_AGE_MAX 15
+
 /mob/living/basic/horse
 	name = "horse"
 	desc = "A majestic equine creature. Larger and stronger than a pony."
@@ -42,6 +46,10 @@
 	var/max_speed = 100
 	var/tamed_points = 150
 	var/datum/horse_family_tree/family_tree
+	var/age = 0
+	var/was_born = FALSE
+	var/retired = FALSE
+	var/last_aged_round
 /datum/emote/horse
 	mob_type_allowed_typecache = /mob/living/basic/horse
 	mob_type_blacklist_typecache = list()
@@ -59,17 +67,22 @@
 	emote_type = EMOTE_VISIBLE | EMOTE_AUDIBLE
 	vary = TRUE
 	sound = 'sound/mobs/non-humanoids/pony/snort.ogg'
-/mob/living/basic/horse/Initialize(mapload)
+/mob/living/basic/horse/Initialize(mapload, datum/stored_horse/from_storage = null)
 	. = ..()
-	name = pick_horse_name()
-	gender = pick(MALE, FEMALE)
-	if(!breed)
-		var/breed_type = get_random_horse_breed()
-		breed = get_breed_datum(breed_type)
-	temperament = rand(breed.min_temperament, breed.max_temperament)
-	intelligence = rand(breed.min_intelligence, breed.max_intelligence)
-	sspeed = rand(breed.min_speed, breed.max_speed)
-	set_random_color_variant()
+	if(from_storage)
+		apply_stored_data(from_storage)
+	else
+		if(!was_born && !age)
+			age = rand(HORSE_WILD_AGE_MIN, HORSE_WILD_AGE_MAX)
+		name = pick_horse_name()
+		gender = pick(MALE, FEMALE)
+		if(!breed)
+			var/breed_type = get_random_horse_breed()
+			breed = get_breed_datum(breed_type)
+		temperament = rand(breed.min_temperament, breed.max_temperament)
+		intelligence = rand(breed.min_intelligence, breed.max_intelligence)
+		sspeed = rand(breed.min_speed, breed.max_speed)
+		set_random_color_variant()
 	AddElement(/datum/element/pet_bonus, "whinny")
 	AddElement(/datum/element/ai_retaliate)
 	AddElement(/datum/element/ai_flee_while_injured)
@@ -87,6 +100,41 @@
 	RegisterSignal(src, COMSIG_MOB_ATE, PROC_REF(on_ate_food))
 	RegisterSignal(src, COMSIG_MOVABLE_PREBUCKLE, PROC_REF(on_prebuckle_taming))
 	generate_genetics()
+
+/mob/living/basic/horse/proc/apply_stored_data(datum/stored_horse/stored)
+	if(!stored)
+		return
+	name = stored.horse_name
+	gender = stored.horse_gender
+	if(stored.breed_type)
+		breed = get_breed_datum(stored.breed_type)
+	horse_color_variant = stored.horse_color_variant
+	icon_state = horse_color_variant
+	icon_living = horse_color_variant
+	icon_dead = "[horse_color_variant]_dead"
+	temperament = stored.temperament
+	intelligence = stored.intelligence
+	sspeed = stored.sspeed
+	age = stored.age
+	was_born = stored.was_born
+	last_aged_round = stored.last_aged_round
+	if(stored.supplement_counts)
+		supplement_counts = stored.supplement_counts.Copy()
+
+/mob/living/basic/horse/proc/get_age_description()
+	if(age < 5)
+		return "a young foal"
+	if(age < 10)
+		return "young"
+	if(age < 20)
+		return "in their prime"
+	if(age < HORSE_RETIREMENT_AGE)
+		return "getting on in years"
+	return "elderly"
+
+/mob/living/basic/horse/proc/can_be_used()
+	return !retired && age < HORSE_RETIREMENT_AGE
+
 /mob/living/basic/horse/proc/on_ate_food(mob/living/eater, atom/food, mob/living/feeder)
 	SIGNAL_HANDLER
 	handle_taming_food(food, feeder)
@@ -347,6 +395,8 @@
 	var/datum/horse_genetics/sperm_data = fertilized_egg["sperm"]
 	var/datum/horse_genetics/egg_data = fertilized_egg["egg"]
 	var/mob/living/basic/horse/foal = new /mob/living/basic/horse/foal(loc)
+	foal.was_born = TRUE
+	foal.age = 0
 	var/mob/living/basic/horse/father_horse = fertilized_egg["father"]
 	var/mob/living/basic/horse/mother_horse = fertilized_egg["mother"]
 	if(father_horse?.breed && mother_horse?.breed)
@@ -398,6 +448,8 @@
 	else
 		eggs = list()
 /mob/living/basic/horse/proc/can_mate()
+	if(!can_be_used())
+		return FALSE
 	if(stat != CONSCIOUS)
 		return FALSE
 	if(gender == FEMALE && length(eggs) > 0)
@@ -407,6 +459,9 @@
 	return TRUE
 /mob/living/basic/horse/examine(mob/user)
 	. = ..()
+	. += span_info("This [gender == MALE ? "stallion" : "mare"] is [age] years old and [get_age_description()].")
+	if(retired)
+		. += span_notice("[src] has retired from active duty.")
 	. += span_info("This [gender == MALE ? "stallion" : "mare"] appears to be [temperament < 30 ? "very calm" : temperament < 60 ? "moderately tempered" : "quite spirited"].")
 	. += span_info("It seems [intelligence < 30 ? "simple-minded" : intelligence < 60 ? "moderately intelligent" : "quite clever"].")
 	. += span_info("Its build suggests it would be [sspeed < 30 ? "slow but steady" : sspeed < 60 ? "moderately fast" : "very swift"].")
@@ -503,6 +558,9 @@
 	data["maxIntelligence"] = max_intelligence
 	data["speed"] = sspeed
 	data["maxSpeed"] = max_speed
+	data["age"] = age
+	data["retired"] = retired
+	data["maxAge"] = HORSE_RETIREMENT_AGE
 	data["pregnant"] = gender == FEMALE && length(eggs) > 0
 	data["canBreed"] = can_mate()
 	if(breed)
@@ -744,9 +802,13 @@
 	melee_damage_lower = 3
 	melee_damage_upper = 6
 	tamed_points = 100 // Easier to tame when young
-/mob/living/basic/horse/foal/Initialize(mapload)
+/mob/living/basic/horse/foal/Initialize(mapload, datum/stored_horse/from_storage = null)
+	was_born = TRUE
+	if(!from_storage)
+		age = 0
 	. = ..()
-	addtimer(CALLBACK(src, PROC_REF(grow_up)), 10 MINUTES)
+	if(!from_storage)
+		addtimer(CALLBACK(src, PROC_REF(grow_up)), 10 MINUTES)
 /mob/living/basic/horse/foal/proc/grow_up()
 	visible_message(span_notice("[src] has grown into an adult horse!"))
 	var/mob/living/basic/horse/adult = new /mob/living/basic/horse(loc)
@@ -763,6 +825,9 @@
 	adult.my_owner = my_owner
 	adult.name = name // Preserve the foal's name
 	adult.family_tree = family_tree
+	adult.age = age
+	adult.was_born = was_born
+	adult.last_aged_round = last_aged_round
 	if(my_owner)
 		adult.unique_tamer = unique_tamer
 	adult.generate_genetics()

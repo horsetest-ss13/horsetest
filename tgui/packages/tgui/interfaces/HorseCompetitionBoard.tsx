@@ -52,6 +52,8 @@ type UserHorse = {
   speed: number;
   intelligence: number;
   temperament: number;
+  age: number;
+  canUse: boolean;
 };
 
 type Data = {
@@ -109,7 +111,7 @@ const CompetitionCard = (props: {
   // Check which of user's horses are already entered
   const enteredHorseNames = competition.entrants.map((e) => e.name);
   const availableHorses = userHorses.filter(
-    (h) => !enteredHorseNames.includes(h.name),
+    (h) => h.canUse && !enteredHorseNames.includes(h.name),
   );
   const userEnteredHorses = userHorses.filter((h) =>
     enteredHorseNames.includes(h.name),
@@ -244,7 +246,7 @@ const CompetitionCard = (props: {
                     selected={selectedHorse}
                     options={availableHorses.map((h) => ({
                       value: h.ref,
-                      displayText: `${h.name} (${h.breed}) - Spd:${h.speed} Int:${h.intelligence} Tmp:${h.temperament}`,
+                      displayText: `${h.name} (${h.breed}, age ${h.age}) - Spd:${h.speed} Int:${h.intelligence} Tmp:${h.temperament}`,
                     }))}
                     onSelected={(val) => setSelectedHorse(val as string)}
                     placeholder="Select a horse to enter..."
@@ -408,6 +410,7 @@ export const HorseCompetitionBoard = () => {
                   <Table.Row header>
                     <Table.Cell>Name</Table.Cell>
                     <Table.Cell>Breed</Table.Cell>
+                    <Table.Cell>Age</Table.Cell>
                     <Table.Cell>Speed</Table.Cell>
                     <Table.Cell>Intelligence</Table.Cell>
                     <Table.Cell>Temperament</Table.Cell>
@@ -431,6 +434,14 @@ export const HorseCompetitionBoard = () => {
                       <Table.Row key={idx}>
                         <Table.Cell bold>{horse.name}</Table.Cell>
                         <Table.Cell>{horse.breed}</Table.Cell>
+                        <Table.Cell>
+                          {horse.age}
+                          {!horse.canUse && (
+                            <Box as="span" color="bad" ml={1}>
+                              (retired)
+                            </Box>
+                          )}
+                        </Table.Cell>
                         <Table.Cell>{horse.speed}</Table.Cell>
                         <Table.Cell>{horse.intelligence}</Table.Cell>
                         <Table.Cell>{horse.temperament}</Table.Cell>
