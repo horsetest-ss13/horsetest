@@ -50,20 +50,18 @@
 	. = ..()
 	AddComponent(/datum/component/scope, range_modifier = 1.5)
 
-/obj/item/gun/ballistic/shotgun/doublebarrel/horsetest/sawedoff
+/obj/item/gun/ballistic/rifle/boltaction/horsetest/sawedoff
 	name = "\improper Sawn-Off Double Barrel"
 	desc = "A break-action double-barreled shotgun cut down to pocket size. Devastating up close, useless at range."
-	icon = 'modular_horsetest/modules/guns/sprites/boltactionrifles.dmi'
 	icon_state = "sawn-off_closed"
 	base_icon_state = "sawn-off"
-	obj_flags = UNIQUE_RENAME
 	w_class = WEIGHT_CLASS_NORMAL
+	slot_flags = ITEM_SLOT_BELT
 	weapon_weight = WEAPON_MEDIUM
+	accepted_magazine_type = /obj/item/ammo_box/magazine/internal/shot/dual
+	fire_sound = 'sound/items/weapons/gun/shotgun/shot.ogg'
+	cartridge_wording = "shell"
 	spread = 24
 	pb_knockback = 3
-	can_be_sawn_off = FALSE
-	show_bolt_icon = FALSE
 
-/obj/item/gun/ballistic/shotgun/doublebarrel/horsetest/sawedoff/update_icon_state()
-	. = ..()
-	icon_state = "[base_icon_state]_[get_ammo() ? "closed" : "open"]"
+	SET_BASE_PIXEL(0, 0)
