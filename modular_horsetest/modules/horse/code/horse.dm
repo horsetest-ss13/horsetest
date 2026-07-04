@@ -45,7 +45,6 @@
 	var/sspeed = 30
 	var/max_speed = 100
 	var/tamed_points = 150
-	var/datum/horse_family_tree/family_tree
 	var/age = 0
 	var/was_born = FALSE
 	var/retired = FALSE
@@ -87,8 +86,6 @@
 	AddElement(/datum/element/ai_retaliate)
 	AddElement(/datum/element/ai_flee_while_injured)
 	AddElementTrait(TRAIT_WADDLING, INNATE_TRAIT, /datum/element/waddling)
-	if(!family_tree)
-		family_tree = new /datum/horse_family_tree(null, null)
 	var/static/list/food_types = list(
 		/obj/item/food/grown/apple = 15,
 		/obj/item/food/grown/carrot = 15,
@@ -342,23 +339,8 @@
 	sperm = null
 	eggs = null
 	return ..()
-/mob/living/basic/horse/proc/is_related_to(mob/living/basic/horse/other)
-	if(!istype(other))
-		return FALSE
-	if(!family_tree || !other.family_tree)
-		return FALSE // No family data, allow breeding
-	if(family_tree.is_ancestor(other))
-		return TRUE
-	if(other.family_tree.is_ancestor(src))
-		return TRUE
-	if(family_tree.shares_ancestry_with(other.family_tree, max_depth = 3))
-		return TRUE
-	return FALSE
 /mob/living/basic/horse/proc/mate_with(mob/living/basic/horse/partner)
 	if(!istype(partner))
-		return FALSE
-	if(is_related_to(partner))
-		visible_message(span_warning("[src] and [partner] are too closely related to breed!"))
 		return FALSE
 	var/mob/living/basic/horse/male_parent
 	var/mob/living/basic/horse/female_parent
@@ -427,11 +409,6 @@
 	foal.icon_state = foal.horse_color_variant
 	foal.icon_living = foal.horse_color_variant
 	foal.icon_dead = "[foal.horse_color_variant]_dead"
-	foal.family_tree = new /datum/horse_family_tree(father_horse, mother_horse)
-	if(father_horse?.family_tree)
-		father_horse.family_tree.add_child(foal)
-	if(mother_horse?.family_tree)
-		mother_horse.family_tree.add_child(foal)
 	foal.generate_genetics()
 	visible_message(span_boldnotice("[src] gives birth to a foal!"))
 	playsound(src, 'sound/mobs/non-humanoids/pony/whinny01.ogg', 60)
@@ -575,10 +552,6 @@
 	var/mob/living/owner = my_owner?.resolve()
 	data["owner"] = owner ? (owner.real_name || owner.name) : null
 	data["isOwner"] = owner == user
-	if(family_tree)
-		data["familyTree"] = family_tree.get_family_data(depth = 0, max_depth = 10)
-	else
-		data["familyTree"] = null
 	return data
 /mob/living/basic/horse/ui_act(action, list/params)
 	. = ..()
@@ -680,120 +653,6 @@
 		intelligence += rand(-2, 2)
 	if(prob(10))
 		sspeed += rand(-3, 3)
-/datum/horse_family_tree
-	var/datum/weakref/father
-	var/datum/weakref/mother
-	var/datum/horse_family_tree/father_tree
-	var/datum/horse_family_tree/mother_tree
-	var/list/datum/weakref/children = list()
-	var/birth_time
-	var/cached_name
-/datum/horse_family_tree/New(mob/living/basic/horse/father_horse, mob/living/basic/horse/mother_horse)
-	if(father_horse)
-		father = WEAKREF(father_horse)
-		if(father_horse.family_tree)
-			father_tree = father_horse.family_tree
-	if(mother_horse)
-		mother = WEAKREF(mother_horse)
-		if(mother_horse.family_tree)
-			mother_tree = mother_horse.family_tree
-	birth_time = world.time
-/datum/horse_family_tree/proc/get_father()
-	return father?.resolve()
-/datum/horse_family_tree/proc/get_mother()
-	return mother?.resolve()
-/datum/horse_family_tree/proc/add_child(mob/living/basic/horse/child_horse)
-	if(!child_horse)
-		return
-	children += WEAKREF(child_horse)
-/datum/horse_family_tree/proc/get_children()
-	var/list/living_children = list()
-	for(var/datum/weakref/child_ref in children)
-		var/mob/living/basic/horse/child = child_ref.resolve()
-		if(child)
-			living_children += child
-	return living_children
-/datum/horse_family_tree/proc/is_ancestor(mob/living/basic/horse/check_horse)
-	if(!check_horse)
-		return FALSE
-	var/mob/living/basic/horse/dad = get_father()
-	if(dad == check_horse)
-		return TRUE
-	var/mob/living/basic/horse/mom = get_mother()
-	if(mom == check_horse)
-		return TRUE
-	if(father_tree?.is_ancestor(check_horse))
-		return TRUE
-	if(mother_tree?.is_ancestor(check_horse))
-		return TRUE
-	return FALSE
-/datum/horse_family_tree/proc/shares_ancestry_with(datum/horse_family_tree/other_tree, max_depth = 3)
-	if(!other_tree)
-		return FALSE
-	return check_common_ancestor(src, other_tree, 0, max_depth)
-/datum/horse_family_tree/proc/check_common_ancestor(datum/horse_family_tree/tree1, datum/horse_family_tree/tree2, depth, max_depth)
-	if(!tree1 || !tree2 || depth > max_depth)
-		return FALSE
-	var/mob/living/basic/horse/dad1 = tree1.get_father()
-	var/mob/living/basic/horse/dad2 = tree2.get_father()
-	if(dad1 && dad2 && dad1 == dad2)
-		return TRUE
-	var/mob/living/basic/horse/mom1 = tree1.get_mother()
-	var/mob/living/basic/horse/mom2 = tree2.get_mother()
-	if(mom1 && mom2 && mom1 == mom2)
-		return TRUE
-	if(tree1.father_tree && check_common_ancestor(tree1.father_tree, tree2, depth + 1, max_depth))
-		return TRUE
-	if(tree1.mother_tree && check_common_ancestor(tree1.mother_tree, tree2, depth + 1, max_depth))
-		return TRUE
-	if(tree2.father_tree && check_common_ancestor(tree1, tree2.father_tree, depth + 1, max_depth))
-		return TRUE
-	if(tree2.mother_tree && check_common_ancestor(tree1, tree2.mother_tree, depth + 1, max_depth))
-		return TRUE
-	return FALSE
-/datum/horse_family_tree/proc/get_family_data(depth = 0, max_depth = 10)
-	if(depth > max_depth)
-		return null
-	var/list/data = list()
-	var/mob/living/basic/horse/dad = get_father()
-	var/mob/living/basic/horse/mom = get_mother()
-	data["fatherName"] = dad?.name || cached_name || "Unknown"
-	data["motherName"] = mom?.name || cached_name || "Unknown"
-	data["fatherAlive"] = dad ? TRUE : FALSE
-	data["motherAlive"] = mom ? TRUE : FALSE
-	data["depth"] = depth
-	if(dad)
-		data["fatherStats"] = list(
-			"temperament" = dad.temperament,
-			"intelligence" = dad.intelligence,
-			"speed" = dad.sspeed
-		)
-	if(mom)
-		data["motherStats"] = list(
-			"temperament" = mom.temperament,
-			"intelligence" = mom.intelligence,
-			"speed" = mom.sspeed
-		)
-	var/list/children_data = list()
-	for(var/datum/weakref/child_ref in children)
-		var/mob/living/basic/horse/child = child_ref.resolve()
-		if(child)
-			children_data += list(list(
-				"name" = child.name,
-				"alive" = TRUE,
-				"gender" = child.gender == MALE ? "male" : "female",
-				"stats" = list(
-					"temperament" = child.temperament,
-					"intelligence" = child.intelligence,
-					"speed" = child.sspeed
-				)
-			))
-	data["children"] = children_data
-	if(father_tree)
-		data["fatherTree"] = father_tree.get_family_data(depth + 1, max_depth)
-	if(mother_tree)
-		data["motherTree"] = mother_tree.get_family_data(depth + 1, max_depth)
-	return data
 /mob/living/basic/horse/foal
 	name = "foal"
 	desc = "A young horse. Still growing and learning."
@@ -824,7 +683,6 @@
 	adult.tamed_points = tamed_points
 	adult.my_owner = my_owner
 	adult.name = name // Preserve the foal's name
-	adult.family_tree = family_tree
 	adult.age = age
 	adult.was_born = was_born
 	adult.last_aged_round = last_aged_round
