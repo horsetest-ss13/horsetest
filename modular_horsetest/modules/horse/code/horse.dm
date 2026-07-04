@@ -97,6 +97,7 @@
 	AddElement(/datum/element/ridable, /datum/component/riding/creature/pony)
 	RegisterSignal(src, COMSIG_MOB_ATE, PROC_REF(on_ate_food))
 	RegisterSignal(src, COMSIG_MOVABLE_PREBUCKLE, PROC_REF(on_prebuckle_taming))
+	RegisterSignal(src, COMSIG_LIVING_LIFE, PROC_REF(on_life))
 	generate_genetics()
 
 /mob/living/basic/horse/proc/apply_stored_data(datum/stored_horse/stored)
@@ -339,11 +340,32 @@
 	my_owner = WEAKREF(tamer)
 	to_chat(tamer, span_notice("[src] now recognizes you as [p_their()] owner!"))
 /mob/living/basic/horse/Destroy()
-	UnregisterSignal(src, list(COMSIG_MOVABLE_PREBUCKLE, COMSIG_MOB_ATE))
+	UnregisterSignal(src, list(COMSIG_MOVABLE_PREBUCKLE, COMSIG_MOB_ATE, COMSIG_LIVING_LIFE))
 	my_owner = null
 	sperm = null
 	eggs = null
 	return ..()
+
+/mob/living/basic/horse/proc/on_life(datum/source, seconds_per_tick)
+	SIGNAL_HANDLER
+	if(temperament < 30)
+		return
+	var/bite_chance = ((temperament - 30) / (max_temperament - 30)) * 2 * seconds_per_tick
+	if(!prob(bite_chance))
+		return
+	for(var/mob/living/target in oview(1, src))
+		if(target == src || target.stat == DEAD)
+			continue
+		INVOKE_ASYNC(src, PROC_REF(do_bite), target)
+		break
+
+/mob/living/basic/horse/proc/do_bite(mob/living/target)
+	if(get_dist(src, target) > 1 || target.stat == DEAD || stat == DEAD)
+		return
+	manual_emote("kicks at [target]!")
+	playsound(src, attack_sound, 50)
+	target.apply_damage(rand(melee_damage_lower, melee_damage_upper), BRUTE)
+
 /mob/living/basic/horse/proc/mate_with(mob/living/basic/horse/partner)
 	if(!istype(partner))
 		return FALSE
