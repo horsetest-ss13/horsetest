@@ -21,6 +21,7 @@ type HorseData = {
   age: number;
   wasBorn?: boolean;
   retired?: boolean;
+  summoned?: boolean;
   storedTime: number;
   retiredTime?: number;
 };
@@ -52,10 +53,11 @@ const HorseSlot = (props: {
   nearbyHorses: NearbyHorse[];
   maxRetirementAge: number;
   onStore: (slot: number, horseRef: string) => void;
-  onRetrieve: (slot: number) => void;
+  onSummon: (slot: number) => void;
+  onUnsummon: (slot: number) => void;
   onClear: (slot: number) => void;
 }) => {
-  const { slot, nearbyHorses, maxRetirementAge, onStore, onRetrieve, onClear } =
+  const { slot, nearbyHorses, maxRetirementAge, onStore, onSummon, onUnsummon, onClear } =
     props;
   const [selectedHorse, setSelectedHorse] = useState<string | null>(null);
 
@@ -99,14 +101,25 @@ const HorseSlot = (props: {
             </LabeledList.Item>
           </LabeledList>
           <Box mt={1}>
-            <Button
-              fluid
-              icon="download"
-              color="good"
-              onClick={() => onRetrieve(slot.slot)}
-            >
-              Retrieve {slot.horse.name}
-            </Button>
+            {slot.horse.summoned ? (
+              <Button
+                fluid
+                icon="upload"
+                color="average"
+                onClick={() => onUnsummon(slot.slot)}
+              >
+                Recall {slot.horse.name}
+              </Button>
+            ) : (
+              <Button
+                fluid
+                icon="magic"
+                color="good"
+                onClick={() => onSummon(slot.slot)}
+              >
+                Summon {slot.horse.name}
+              </Button>
+            )}
           </Box>
         </Box>
       ) : (
@@ -176,8 +189,12 @@ export const HorseHoldie = () => {
     act('store', { slot, horse_ref: horseRef });
   };
 
-  const handleRetrieve = (slot: number) => {
-    act('retrieve', { slot });
+  const handleSummon = (slot: number) => {
+    act('summon', { slot });
+  };
+
+  const handleUnsummon = (slot: number) => {
+    act('unsummon', { slot });
   };
 
   const handleClear = (slot: number) => {
@@ -189,8 +206,9 @@ export const HorseHoldie = () => {
       <Window.Content scrollable>
         <Section title="Horse Holdie">
           <Box color="label" mb={1}>
-            Store your horses here to save them between rounds! Horses age one
-            year the first time they are retrieved each round and retire at age{' '}
+            Store your horses here to save them between rounds! Summon them for
+            the shift and recall them anytime from the holdie. Horses age one
+            year the first time they are summoned each round and retire at age{' '}
             {maxRetirementAge}. Linked to your account: {ckey}
           </Box>
         </Section>
@@ -202,7 +220,8 @@ export const HorseHoldie = () => {
             nearbyHorses={nearbyHorses}
             maxRetirementAge={maxRetirementAge}
             onStore={handleStore}
-            onRetrieve={handleRetrieve}
+            onSummon={handleSummon}
+            onUnsummon={handleUnsummon}
             onClear={handleClear}
           />
         ))}

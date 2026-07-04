@@ -20,6 +20,7 @@ GLOBAL_LIST_EMPTY(horse_retired_cache)
 	var/stored_by
 	var/retired_time
 	var/last_aged_round
+	var/datum/weakref/summoned_horse
 
 /datum/stored_horse/New()
 	supplement_counts = list()
@@ -41,15 +42,95 @@ GLOBAL_LIST_EMPTY(horse_retired_cache)
 	last_aged_round = horse.last_aged_round
 	if(horse.equipped_saddle)
 		saddle_type = horse.equipped_saddle.type
+	else
+		saddle_type = null
 	if(horse.equipped_bridle)
 		bridle_type = horse.equipped_bridle.type
+	else
+		bridle_type = null
 	if(horse.equipped_wraps)
 		wraps_type = horse.equipped_wraps.type
+	else
+		wraps_type = null
 	if(horse.supplement_counts)
 		supplement_counts = horse.supplement_counts.Copy()
+	else
+		supplement_counts = list()
 	stored_by = ckey
 	stored_time = world.realtime
 	return TRUE
+
+/datum/stored_horse/proc/sync_from_horse(mob/living/basic/horse/horse)
+	if(!horse)
+		return FALSE
+	horse_name = horse.name
+	horse_gender = horse.gender
+	if(horse.breed)
+		breed_type = horse.breed.type
+	horse_color_variant = horse.horse_color_variant
+	temperament = horse.temperament
+	intelligence = horse.intelligence
+	sspeed = horse.sspeed
+	age = horse.age
+	was_born = horse.was_born
+	last_aged_round = horse.last_aged_round
+	saddle_type = horse.equipped_saddle?.type
+	bridle_type = horse.equipped_bridle?.type
+	wraps_type = horse.equipped_wraps?.type
+	supplement_counts = horse.supplement_counts?.Copy() || list()
+	return TRUE
+
+/datum/stored_horse/proc/is_summoned()
+	var/mob/living/basic/horse/horse = summoned_horse?.resolve()
+	return horse && !QDELETED(horse) && horse.stat != DEAD
+
+/datum/stored_horse/proc/save_holdie_data()
+	if(stored_by)
+		save_horse_player_data(stored_by)
+
+/datum/component/horse_holdie_sync
+	dupe_mode = COMPONENT_DUPE_UNIQUE
+	var/datum/stored_horse/stored
+
+/datum/component/horse_holdie_sync/Initialize(datum/stored_horse/stored)
+	if(!stored || !isliving(parent))
+		return COMPONENT_INCOMPATIBLE
+	src.stored = stored
+	return ..()
+
+/datum/component/horse_holdie_sync/RegisterWithParent()
+	var/mob/living/basic/horse/horse = parent
+	horse.holdie_source = stored
+	stored.summoned_horse = WEAKREF(horse)
+	RegisterSignal(horse, COMSIG_MOB_ATE, PROC_REF(on_horse_updated))
+	RegisterSignal(horse, COMSIG_HORSE_HOLDIE_SYNC, PROC_REF(on_horse_updated))
+	RegisterSignal(horse, COMSIG_QDELETING, PROC_REF(on_horse_deleted))
+
+/datum/component/horse_holdie_sync/UnregisterFromParent()
+	var/mob/living/basic/horse/horse = parent
+	UnregisterSignal(horse, list(COMSIG_MOB_ATE, COMSIG_HORSE_HOLDIE_SYNC, COMSIG_QDELETING))
+	if(stored?.summoned_horse?.resolve() == horse)
+		stored.summoned_horse = null
+
+/datum/component/horse_holdie_sync/proc/on_horse_updated(datum/source)
+	SIGNAL_HANDLER
+	if(!stored)
+		return
+	var/mob/living/basic/horse/horse = parent
+	if(!istype(horse))
+		return
+	stored.sync_from_horse(horse)
+	stored.save_holdie_data()
+
+/datum/component/horse_holdie_sync/proc/on_horse_deleted(datum/source)
+	SIGNAL_HANDLER
+	if(!stored)
+		return
+	var/mob/living/basic/horse/horse = parent
+	if(istype(horse))
+		stored.sync_from_horse(horse)
+		stored.save_holdie_data()
+	stored.summoned_horse = null
 
 /datum/stored_horse/proc/spawn_horse(turf/spawn_location, mob/living/new_owner)
 	if(!spawn_location)
@@ -69,9 +150,14 @@ GLOBAL_LIST_EMPTY(horse_retired_cache)
 		wraps.on_horse = TRUE
 	new_horse.update_appearance(UPDATE_OVERLAYS)
 	new_horse.tamed_points = 0
+	new_horse.AddComponent(/datum/component/horse_holdie_sync, src)
 	if(new_owner)
 		new_horse.my_owner = WEAKREF(new_owner)
 	return new_horse
+
+/mob/living/basic/horse/proc/send_holdie_sync()
+	if(holdie_source)
+		SEND_SIGNAL(src, COMSIG_HORSE_HOLDIE_SYNC)
 
 /datum/stored_horse/proc/get_display_data()
 	var/datum/horse_breed/breed_datum = get_breed_datum(breed_type)
@@ -85,6 +171,7 @@ GLOBAL_LIST_EMPTY(horse_retired_cache)
 		"age" = age,
 		"wasBorn" = was_born,
 		"retired" = !!retired_time,
+		"summoned" = is_summoned(),
 		"storedTime" = stored_time,
 		"retiredTime" = retired_time
 	)
@@ -292,6 +379,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/structure/horse_holdie, 32)
 	for(var/mob/living/basic/horse/horse in range(3, src))
 		if(horse.stat == DEAD)
 			continue
+		if(horse.holdie_source)
+			continue
 		var/mob/living/owner = horse.my_owner?.resolve()
 		if(owner == user)
 			nearby_horses += list(list(
@@ -318,8 +407,10 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/structure/horse_holdie, 32)
 	switch(action)
 		if("store")
 			return ui_act_store(user, user_ckey, horse_slots, params)
-		if("retrieve")
-			return ui_act_retrieve(user, user_ckey, horse_slots, params)
+		if("summon")
+			return ui_act_summon(user, user_ckey, horse_slots, params)
+		if("unsummon")
+			return ui_act_unsummon(user, user_ckey, horse_slots, params)
 		if("clear")
 			return ui_act_clear(user, user_ckey, horse_slots, params)
 
@@ -337,6 +428,9 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/structure/horse_holdie, 32)
 	var/mob/living/owner = horse.my_owner?.resolve()
 	if(owner != user)
 		to_chat(user, span_warning("That's not your horse!"))
+		return TRUE
+	if(horse.holdie_source)
+		to_chat(user, span_warning("[horse.name] is already stored in the holdie! No need to store them again."))
 		return TRUE
 	if(horse.age >= HORSE_RETIREMENT_AGE)
 		return ui_act_retire_horse(user, user_ckey, horse)
@@ -360,13 +454,16 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/structure/horse_holdie, 32)
 	qdel(horse)
 	return TRUE
 
-/obj/structure/horse_holdie/proc/ui_act_retrieve(mob/living/user, user_ckey, list/horse_slots, list/params)
+/obj/structure/horse_holdie/proc/ui_act_summon(mob/living/user, user_ckey, list/horse_slots, list/params)
 	var/slot = text2num(params["slot"])
 	if(!validate_slot(slot, user))
 		return TRUE
 	var/datum/stored_horse/stored = horse_slots["[slot]"]
 	if(!stored)
 		to_chat(user, span_warning("No horse in that slot!"))
+		return TRUE
+	if(stored.is_summoned())
+		to_chat(user, span_warning("[stored.horse_name] is already out!"))
 		return TRUE
 	stored.age_for_round()
 	if(stored.is_retirement_age())
@@ -377,13 +474,34 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/structure/horse_holdie, 32)
 		return TRUE
 	var/mob/living/basic/horse/new_horse = stored.spawn_horse(get_spawn_turf(), user)
 	if(!new_horse)
-		to_chat(user, span_warning("Failed to retrieve horse!"))
+		to_chat(user, span_warning("Failed to summon horse!"))
 		return TRUE
-	horse_slots["[slot]"] = null
 	save_horse_holdie_data(user_ckey, horse_slots)
-	to_chat(user, span_notice("[new_horse.name] has been retrieved from storage! They are now [new_horse.age] years old."))
+	to_chat(user, span_notice("[new_horse.name] has been summoned! They are now [new_horse.age] years old. They'll stay in storage when the shift ends."))
 	visible_message(span_notice("[new_horse] materializes from the [src]!"))
 	playsound(src, 'sound/effects/magic/smoke.ogg', 50)
+	return TRUE
+
+/obj/structure/horse_holdie/proc/ui_act_unsummon(mob/living/user, user_ckey, list/horse_slots, list/params)
+	var/slot = text2num(params["slot"])
+	if(!validate_slot(slot, user))
+		return TRUE
+	var/datum/stored_horse/stored = horse_slots["[slot]"]
+	if(!stored)
+		to_chat(user, span_warning("No horse in that slot!"))
+		return TRUE
+	if(!stored.is_summoned())
+		to_chat(user, span_warning("[stored.horse_name] is not out right now!"))
+		return TRUE
+	var/mob/living/basic/horse/horse = stored.summoned_horse?.resolve()
+	if(!horse)
+		stored.summoned_horse = null
+		to_chat(user, span_warning("Could not find [stored.horse_name]!"))
+		return TRUE
+	to_chat(user, span_notice("[horse.name] has been recalled to the holdie."))
+	visible_message(span_notice("[horse] vanishes into the [src]!"))
+	playsound(src, 'sound/effects/magic/smoke.ogg', 50)
+	qdel(horse)
 	return TRUE
 
 /obj/structure/horse_holdie/proc/ui_act_clear(mob/living/user, user_ckey, list/horse_slots, list/params)
@@ -397,6 +515,10 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/structure/horse_holdie, 32)
 	var/confirm = tgui_alert(user, "Are you sure you want to permanently delete [stored.horse_name] from storage?", "Confirm Deletion", list("Yes", "No"))
 	if(confirm != "Yes")
 		return TRUE
+	if(stored.is_summoned())
+		var/mob/living/basic/horse/summoned = stored.summoned_horse?.resolve()
+		if(summoned)
+			qdel(summoned)
 	horse_slots["[slot]"] = null
 	save_horse_holdie_data(user_ckey, horse_slots)
 	to_chat(user, span_notice("Slot [slot] has been cleared."))
@@ -418,6 +540,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/structure/horse_holdie, 32)
 
 /obj/structure/horse_holdie/examine(mob/user)
 	. = ..()
-	. += span_notice("Click to store or retrieve your horses.")
+	. += span_notice("Click to store or summon your horses.")
 	. += span_notice("Horses stored here persist between shifts!")
-	. += span_notice("Horses age one year the first time they are retrieved each round. They retire at age [HORSE_RETIREMENT_AGE].")
+	. += span_notice("Summon your horses for the shift, or recall them early from the holdie.")
+	. += span_notice("No need to store them back before the round ends — stats sync automatically.")
+	. += span_notice("Horses age one year the first time they are summoned each round. They retire at age [HORSE_RETIREMENT_AGE].")

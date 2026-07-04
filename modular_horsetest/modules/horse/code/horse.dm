@@ -49,6 +49,7 @@
 	var/was_born = FALSE
 	var/retired = FALSE
 	var/last_aged_round
+	var/datum/stored_horse/holdie_source
 /datum/emote/horse
 	mob_type_allowed_typecache = /mob/living/basic/horse
 	mob_type_blacklist_typecache = list()
@@ -215,6 +216,7 @@
 	saddle.on_horse = TRUE
 	visible_message(span_notice("[user] places [saddle] on [src]."))
 	update_appearance(UPDATE_OVERLAYS)
+	send_holdie_sync()
 	return TRUE
 
 /mob/living/basic/horse/proc/equip_bridle(obj/item/horse_bridle/bridle, mob/living/user)
@@ -227,6 +229,7 @@
 	bridle.on_horse = TRUE
 	visible_message(span_notice("[user] places [bridle] on [src]."))
 	update_appearance(UPDATE_OVERLAYS)
+	send_holdie_sync()
 	return TRUE
 
 /mob/living/basic/horse/proc/equip_wraps(obj/item/horse_wraps/wraps, mob/living/user)
@@ -239,6 +242,7 @@
 	wraps.on_horse = TRUE
 	visible_message(span_notice("[user] places [wraps] on [src]."))
 	update_appearance(UPDATE_OVERLAYS)
+	send_holdie_sync()
 	return TRUE
 
 /mob/living/basic/horse/proc/unequip_item(equipment_type, mob/living/user)
@@ -273,6 +277,7 @@
 		else
 			return FALSE
 	update_appearance(UPDATE_OVERLAYS)
+	send_holdie_sync()
 	return TRUE
 
 /mob/living/basic/horse/update_overlays()
