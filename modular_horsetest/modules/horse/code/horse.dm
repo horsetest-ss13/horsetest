@@ -348,6 +348,8 @@
 
 /mob/living/basic/horse/proc/on_life(datum/source, seconds_per_tick)
 	SIGNAL_HANDLER
+	if(!isturf(loc)) // Stabled or otherwise held, no kicking in there
+		return
 	if(temperament < 30)
 		return
 	var/bite_chance = ((temperament - 30) / (max_temperament - 30)) * 2 * seconds_per_tick
@@ -580,6 +582,7 @@
 	data["owner"] = owner ? (owner.real_name || owner.name) : null
 	data["isOwner"] = owner == user
 	return data
+
 /mob/living/basic/horse/ui_act(action, list/params)
 	. = ..()
 	if(.)
@@ -588,14 +591,17 @@
 		if("breed")
 			attempt_mate_command(usr)
 			return TRUE
+
 /mob/living/basic/horse/ui_static_data(mob/user)
 	var/list/data = list()
 	data["horseType"] = initial(name)
 	return data
+
 /mob/living/basic/horse/ui_status(mob/user, datum/ui_state/state)
 	if(get_dist(src, user) > 1)
 		return UI_CLOSE
 	return ..()
+
 /mob/living/basic/horse/proc/attempt_mate_command(mob/user)
 	if(!can_mate())
 		to_chat(user, span_warning("[src] is not ready to mate right now."))
@@ -611,6 +617,7 @@
 	var/mob/living/basic/horse/chosen_mate = input(user, "Choose a mate for [src]:", "Horse Breeding") as null|anything in potential_mates
 	if(chosen_mate)
 		mate_with(chosen_mate)
+
 /mob/living/basic/horse/proc/set_random_color_variant()
 	// List of all available horse color variants (excluding syndicate)
 	var/static/list/color_variants = list(
@@ -623,6 +630,7 @@
 	icon_state = horse_color_variant
 	icon_living = horse_color_variant
 	icon_dead = "[horse_color_variant]_dead"
+
 /mob/living/basic/horse/proc/whinny_angrily()
 	manual_emote("whinnies ANGRILY!")
 	playsound(src, pick(list(
@@ -630,15 +638,18 @@
 		'sound/mobs/non-humanoids/pony/whinny02.ogg',
 		'sound/mobs/non-humanoids/pony/whinny03.ogg'
 	)), 60)
+
 /mob/living/basic/horse/take_damage(damage_amount, damage_type, damage_flag, sound_effect, attack_dir, armour_penetration)
 	. = ..()
 	if (prob(33))
 		whinny_angrily()
+
 /mob/living/basic/horse/melee_attack(atom/target, list/modifiers, ignore_cooldown = FALSE)
 	. = ..()
 	if (!.)
 		return
 	whinny_angrily()
+
 /datum/ai_controller/basic_controller/horse
 	blackboard = list(
 		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic,
@@ -653,26 +664,31 @@
 		/datum/ai_planning_subtree/basic_melee_attack_subtree,
 		/datum/ai_planning_subtree/random_speech/pony,
 	)
+
 /mob/living/basic/horse/proc/pick_horse_name()
 	var/static/list/horse_names
 	if(!horse_names)
 		horse_names = world.file2list("strings/horse_names.txt")
 	return pick(horse_names)
+
 /datum/horse_genetics
 	var/temperament
 	var/intelligence
 	var/sspeed
+
 /datum/horse_genetics/New(mob/living/basic/horse/parent)
 	if(parent)
 		temperament = parent.temperament
 		intelligence = parent.intelligence
 		sspeed = parent.sspeed
+
 /datum/horse_genetics/proc/copy()
 	var/datum/horse_genetics/new_genetics = new()
 	new_genetics.temperament = temperament
 	new_genetics.intelligence = intelligence
 	new_genetics.sspeed = sspeed
 	return new_genetics
+
 /datum/horse_genetics/proc/mutate()
 	if(prob(10))
 		temperament += rand(-3, 3)
@@ -680,6 +696,7 @@
 		intelligence += rand(-2, 2)
 	if(prob(10))
 		sspeed += rand(-3, 3)
+
 /mob/living/basic/horse/foal
 	name = "foal"
 	desc = "A young horse. Still growing and learning."
@@ -688,6 +705,7 @@
 	melee_damage_lower = 3
 	melee_damage_upper = 6
 	tamed_points = 100 // Easier to tame when young
+
 /mob/living/basic/horse/foal/Initialize(mapload, datum/stored_horse/from_storage = null)
 	was_born = TRUE
 	if(!from_storage)
@@ -695,6 +713,7 @@
 	. = ..()
 	if(!from_storage)
 		addtimer(CALLBACK(src, PROC_REF(grow_up)), 10 MINUTES)
+
 /mob/living/basic/horse/foal/proc/grow_up()
 	visible_message(span_notice("[src] has grown into an adult horse!"))
 	var/mob/living/basic/horse/adult = new /mob/living/basic/horse(loc)

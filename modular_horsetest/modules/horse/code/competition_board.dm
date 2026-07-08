@@ -56,6 +56,7 @@ GLOBAL_LIST_EMPTY(horse_competition_history)
 		return 0
 	var/elapsed = world.time - registration_start
 	return max(0, registration_duration - elapsed)
+
 /datum/horse_competition/proc/enter_horse(mob/living/basic/horse/horse, mob/living/owner)
 	if(state != COMP_STATE_REGISTRATION)
 		return list("success" = FALSE, "message" = "Registration is closed!")
@@ -70,6 +71,11 @@ GLOBAL_LIST_EMPTY(horse_competition_history)
 		return list("success" = FALSE, "message" = "You don't own [horse.name]!")
 	if(!horse.can_be_used())
 		return list("success" = FALSE, "message" = "[horse.name] is too old to compete!")
+	// We gotta be able to yoink the horsie
+	if(!isturf(horse.loc))
+		return list("success" = FALSE, "message" = "[horse.name] is already competing or otherwise held!")
+	if(!host_board || get_dist(horse, host_board) > 3)
+		return list("success" = FALSE, "message" = "[horse.name] needs to be near the competition board!")
 	var/datum/bank_account/account = owner.get_bank_account()
 	if(!account)
 		return list("success" = FALSE, "message" = "You need a bank account to enter!")
@@ -79,6 +85,11 @@ GLOBAL_LIST_EMPTY(horse_competition_history)
 		return list("success" = FALSE, "message" = "Transaction failed!")
 	prize_pool += entry_fee
 	entrants += WEAKREF(horse)
+	host_board.take_custody(horse)
+	host_board.say("[horse.name] is entered in the [name]! ([length(entrants)]/[max_entrants])")
+	// Full field? No need to wait out the clock.
+	if(length(entrants) >= max_entrants)
+		start_competition()
 	return list("success" = TRUE, "message" = "[horse.name] has been entered into [name]! [entry_fee] credits deducted.")
 /datum/horse_competition/proc/withdraw_horse(mob/living/basic/horse/horse, mob/living/owner)
 	if(state != COMP_STATE_REGISTRATION)
@@ -95,33 +106,49 @@ GLOBAL_LIST_EMPTY(horse_competition_history)
 			var/datum/bank_account/account = owner.get_bank_account()
 			if(account)
 				account.adjust_money(refund, "Horse Competition Refund: [name]")
+			host_board?.release_horse(horse)
 			return list("success" = TRUE, "message" = "[horse.name] has been withdrawn. [refund] credits refunded.")
 	return list("success" = FALSE, "message" = "[horse.name] is not in this competition!")
+
+/// An entered horse was deleted out from under us drop 'em.
+/datum/horse_competition/proc/scratch_horse(datum/weakref/horse_ref, horse_name)
+	if(!(horse_ref in entrants))
+		return FALSE
+	entrants -= horse_ref
+	host_board?.say("[horse_name] has been scratched from the [name].")
+	return TRUE
 /datum/horse_competition/proc/start_competition()
 	if(state != COMP_STATE_REGISTRATION)
 		return
 	if(length(entrants) < min_entrants)
-		state = COMP_STATE_FINISHED
-		for(var/datum/weakref/ref in entrants)
-			var/mob/living/basic/horse/horse = ref.resolve()
-			if(!horse)
-				continue
-			var/mob/living/horse_owner = horse.my_owner?.resolve()
-			if(horse_owner)
-				var/datum/bank_account/account = horse_owner.get_bank_account()
-				if(account)
-					account.adjust_money(entry_fee, "Horse Competition Cancelled: [name]")
-		results = list(list("place" = 0, "name" = "CANCELLED", "owner" = "", "score" = 0, "prize" = 0, "message" = "Not enough entrants! Entry fees refunded."))
-		GLOB.horse_competition_history += src
-		GLOB.horse_competitions -= src
+		cancel_and_refund()
 		return
 	state = COMP_STATE_IN_PROGRESS
 	addtimer(CALLBACK(src, PROC_REF(run_competition)), 3 SECONDS)
+/datum/horse_competition/proc/cancel_and_refund()
+	state = COMP_STATE_FINISHED
+	for(var/datum/weakref/ref in entrants)
+		var/mob/living/basic/horse/horse = ref.resolve()
+		if(!horse)
+			continue
+		var/mob/living/horse_owner = horse.my_owner?.resolve()
+		if(horse_owner)
+			var/datum/bank_account/account = horse_owner.get_bank_account()
+			if(account)
+				account.adjust_money(entry_fee, "Horse Competition Cancelled: [name]")
+		host_board?.release_horse(horse)
+	results = list(list("place" = 0, "name" = "CANCELLED", "owner" = "", "score" = 0, "prize" = 0, "message" = "Not enough entrants! Entry fees refunded."))
+	if(host_board)
+		host_board.announce_results(src)
+	move_to_history()
 /datum/horse_competition/proc/run_competition()
 	var/list/scores = list()
 	for(var/datum/weakref/ref in entrants)
 		var/mob/living/basic/horse/horse = ref.resolve()
-		if(!horse || horse.stat == DEAD)
+		if(!horse)
+			continue
+		if(horse.stat == DEAD)
+			host_board?.release_horse(horse)
 			continue
 		var/mob/living/horse_owner = horse.my_owner?.resolve()
 		var/score = calculate_score(horse)
@@ -158,6 +185,8 @@ GLOBAL_LIST_EMPTY(horse_competition_history)
 			"score" = entry["score"],
 			"prize" = prize
 		))
+		var/mob/living/basic/horse/placed_horse = entry["horse"]
+		host_board?.release_horse(placed_horse)
 		place++
 	state = COMP_STATE_FINISHED
 	if(host_board)
@@ -211,7 +240,7 @@ GLOBAL_LIST_EMPTY(horse_competition_history)
 	return b["score"] - a["score"]
 /obj/structure/horse_competition_board
 	name = "horse competition board"
-	desc = "A board displaying information about upcoming horse competitions. Alt-click to open."
+	desc = "A board displaying information about upcoming horse competitions. Alt-click to open. Entered horses are held by the board until their event runs."
 	icon = 'icons/obj/wallmounts.dmi'
 	icon_state = "noticeboard"
 	density = FALSE
@@ -227,6 +256,10 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/structure/horse_competition_board, 32)
 /obj/structure/horse_competition_board/Destroy()
 	if(competition_spawn_timer)
 		deltimer(competition_spawn_timer)
+	// Send everyone home with their fees before we go
+	for(var/datum/horse_competition/comp in GLOB.horse_competitions)
+		if(comp.host_board == src && comp.state != COMP_STATE_FINISHED)
+			comp.cancel_and_refund()
 	return ..()
 /obj/structure/horse_competition_board/proc/spawn_competition()
 	var/active_count = 0
@@ -237,6 +270,40 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/structure/horse_competition_board, 32)
 		var/comp_type = pick(COMPETITION_RACE, COMPETITION_SHOW, COMPETITION_TRIAL)
 		new /datum/horse_competition(comp_type, null, src)
 	competition_spawn_timer = addtimer(CALLBACK(src, PROC_REF(spawn_competition)), rand(2 MINUTES, 4 MINUTES), TIMER_STOPPABLE)
+
+/// Physically yoinks the horsie
+/obj/structure/horse_competition_board/proc/take_custody(mob/living/basic/horse/horse)
+	horse.unbuckle_all_mobs()
+	horse.visible_message(span_notice("[horse] vanishes into [src]!"))
+	playsound(src, 'sound/effects/magic/smoke.ogg', 50)
+	horse.forceMove(src)
+	horse.ai_controller?.set_ai_status(AI_STATUS_OFF)
+	RegisterSignal(horse, COMSIG_QDELETING, PROC_REF(on_entered_horse_deleted))
+
+/obj/structure/horse_competition_board/proc/release_horse(mob/living/basic/horse/horse)
+	if(!horse || QDELETED(horse))
+		return
+	UnregisterSignal(horse, COMSIG_QDELETING)
+	if(horse.loc != src)
+		return
+	horse.forceMove(get_release_turf())
+	horse.ai_controller?.set_ai_status(AI_STATUS_ON)
+	horse.visible_message(span_notice("[horse] materializes from [src]!"))
+	playsound(src, 'sound/effects/magic/smoke.ogg', 50)
+/obj/structure/horse_competition_board/proc/on_entered_horse_deleted(mob/living/basic/horse/horse)
+	SIGNAL_HANDLER
+	UnregisterSignal(horse, COMSIG_QDELETING)
+	var/datum/weakref/horse_ref = WEAKREF(horse)
+	for(var/datum/horse_competition/comp in GLOB.horse_competitions)
+		if(comp.host_board != src)
+			continue
+		if(comp.scratch_horse(horse_ref, horse.name))
+			return
+/obj/structure/horse_competition_board/proc/get_release_turf()
+	for(var/turf/open_turf in orange(1, src))
+		if(!open_turf.density)
+			return open_turf
+	return get_turf(src)
 /obj/structure/horse_competition_board/proc/announce_results(datum/horse_competition/comp)
 	if(!comp || !length(comp.results))
 		return

@@ -287,6 +287,10 @@ const CompetitionCard = (props: {
               </Stack.Item>
             )}
           </Stack>
+          <Box color="label" fontSize="11px" mt={0.5}>
+            Your horse must be beside the board to enter. It will be held by
+            the board until the event runs.
+          </Box>
         </Box>
       )}
 
