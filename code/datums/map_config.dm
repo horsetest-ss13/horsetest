@@ -5,7 +5,7 @@
 
 /datum/map_config
 	// Metadata
-	var/config_filename = "_maps/metastation.json"
+	var/config_filename = "_maps/map_jsons/metastation.json"
 	var/defaulted = TRUE  // set to FALSE by LoadConfig() succeeding
 	// Config from maps.txt
 	var/config_max_users = 0
@@ -262,7 +262,7 @@
 		// Just pick and take based on weight
 		for(var/i in 1 to wilderness_levels)
 			wilderness_maps_to_spawn += pick_weight_take(wilderness)
-		shuffle(wilderness_maps_to_spawn)
+		shuffle_inplace(wilderness_maps_to_spawn)
 
 	var/list/wilderness_level_traits = json["wilderness_level_traits"]
 	if (islist(wilderness_level_traits))
