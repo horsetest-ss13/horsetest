@@ -7034,6 +7034,7 @@
 #include "modular_horsetest\modules\horse\code\horse_feed.dm"
 #include "modular_horsetest\modules\horse\code\horse_holdie.dm"
 #include "modular_horsetest\modules\horse\code\horse_items.dm"
+#include "modular_horsetest\modules\horse\code\jumps.dm"
 #include "modular_horsetest\modules\revolvers\code\revolvers.dm"
 #include "modular_horsetest\modules\guns\code\boltactionrifles.dm"
 #include "modular_horsetest\modules\guns\code\pumpactionshotguns.dm"

@@ -8,32 +8,59 @@
 	icon_state = "crossrail"
 	max_integrity = 120
 	proj_pass_rate = 60
-	bar_material = WOOD
+	bar_material = 2 // WOOD
 	var/min_speed_stat = 20
+	/// Stops the "not fast enough" warning from spamming while a rider keeps pushing into the jump.
+	COOLDOWN_DECLARE(refuse_message_cooldown)
 
+/obj/structure/barricade/horse_jump/Initialize(mapload)
+	. = ..()
+	var/static/list/loc_connections = list(
+		COMSIG_ATOM_ENTERED = PROC_REF(on_entered),
+	)
+	AddElement(/datum/element/connect_loc, loc_connections)
+
+// This gets called constantly (movement, pathfinding), so it must stay free of side effects.
 /obj/structure/barricade/horse_jump/CanAllowThrough(atom/movable/mover, border_dir)
 	// Default barricade pass logic (projectiles, etc.) still applies.
 	. = ..()
 	if(.)
 		return TRUE
 
+	// Riders follow their horse onto the jump after it has already cleared it.
+	if(isliving(mover))
+		var/mob/living/rider = mover
+		if(istype(rider.buckled, /mob/living/basic/horse) && rider.buckled.loc == loc)
+			return TRUE
+
 	var/mob/living/basic/horse/mount = mover
 	if(!istype(mount))
 		return FALSE
 
 	// Change mount.sspeed to mount.strength once we add strength stats.
-	if(mount.sspeed < min_speed_stat)
-		for(var/mob/living/rider in mount.buckled_mobs)
-			to_chat(rider, span_warning("[mount] isn't fast enough to clear [src]!"))
-		return FALSE
+	return mount.sspeed >= min_speed_stat
+
+/obj/structure/barricade/horse_jump/Bumped(atom/movable/bumped_atom)
+	. = ..()
+	var/mob/living/basic/horse/mount = bumped_atom
+	if(!istype(mount) || !COOLDOWN_FINISHED(src, refuse_message_cooldown))
+		return
+	COOLDOWN_START(src, refuse_message_cooldown, 2 SECONDS)
+	for(var/mob/living/rider in mount.buckled_mobs)
+		to_chat(rider, span_warning("[mount] isn't fast enough to clear [src]!"))
+
+/obj/structure/barricade/horse_jump/proc/on_entered(datum/source, atom/movable/arrived, atom/old_loc, list/atom/old_locs)
+	SIGNAL_HANDLER
+	var/mob/living/basic/horse/mount = arrived
+	if(!istype(mount))
+		return
 
 	if(length(mount.buckled_mobs))
 		var/mob/living/rider = mount.buckled_mobs[1]
-    	visible_message(span_notice("[rider] jumps [mount] over [src]!"))
+		visible_message(span_notice("[rider] jumps [mount] over [src]!"))
 	else
 		visible_message(span_notice("[mount] leaps over [src]!"))
 	playsound(src, 'sound/mobs/non-humanoids/pony/whinny01.ogg', 50, vary = TRUE)
-		return TRUE
 
 /obj/structure/barricade/horse_jump/crossrail	// exists solely to make admin spawning easier
 
