@@ -17,3 +17,11 @@
 	icon = 'modular_horsetest/modules/power/horsematter/icons/horsematter.dmi'
 	base_icon_state = "hm"
 	icon_state = "hm"
+
+/obj/machinery/power/supermatter_crystal/shard
+	base_icon_state = "hm"
+	icon_state = "hm"
+
+/obj/machinery/power/supermatter_crystal/small
+	base_icon_state = "hm"
+	icon_state = "hm"

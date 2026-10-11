@@ -18,15 +18,33 @@
 	icon = 'modular_horsetest/modules/horse/icons/horse.dmi'
 	icon_state = "donkey"
 	icon_living = "donkey"
-	icon_dead = "pony_dead" // change this later I suppose
-	gender = MALE
-	mob_biotypes = MOB_ORGANIC | MOB_BEAST
-	speak_emote = list("brays", "heehaws")
+	icon_dead = "pony_dead"
+	horse_color_variant = "donkey"
+	speak_emote = list("brays")
 
-// I have no idea how to handle the below. //
+/mob/living/basic/horse/donkey/Initialize(mapload)
+	breed = get_breed_datum(/datum/horse_breed/donkey)
+	return ..()
 
-	breed = /datum/horse_breed/donkey
+/mob/living/basic/horse/donkey/set_random_color_variant()
+	horse_color_variant = "donkey"
+	icon_state = horse_color_variant
+	icon_living = horse_color_variant
+	icon_dead = "pony_dead"
 
-/datum/emote/donkey/bray
+/mob/living/basic/horse/donkey/look_dead()
+	icon = 'icons/mob/simple/animal.dmi'
+	return ..()
+
+/mob/living/basic/horse/donkey/look_alive()
+	icon = initial(icon)
+	return ..()
+
+/datum/emote/horse/bray
+	key = "bray"
+	key_third_person = "brays"
+	message = "brays loudly."
+	emote_type = EMOTE_VISIBLE | EMOTE_AUDIBLE
+	mob_type_allowed_typecache = /mob/living/basic/horse/donkey
 
 // add braying sound

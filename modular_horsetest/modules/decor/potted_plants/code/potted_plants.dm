@@ -8,3 +8,7 @@
 
 /obj/item/kirbyplants
 	icon = 'modular_horsetest/modules/decor/potted_plants/icons/potted_plants.dmi'
+
+/obj/item/kirbyplants/random/Initialize(mapload)
+	. = ..()
+	icon = 'modular_horsetest/modules/decor/potted_plants/icons/potted_plants.dmi'
