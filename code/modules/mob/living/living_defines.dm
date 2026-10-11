@@ -1,7 +1,7 @@
 /mob/living
 	see_invisible = SEE_INVISIBLE_LIVING
 	abstract_type = /mob/living
-	hud_possible = list(HEALTH_HUD,STATUS_HUD,ANTAG_HUD)
+	hud_possible = list(HEALTH_HUD,STATUS_HUD,BLOOD_HUD,ANTAG_HUD)
 	pressure_resistance = 10
 	hud_type = /datum/hud/living
 	interaction_flags_click = ALLOW_RESTING
@@ -36,6 +36,13 @@
 	///Burn damage caused by being way too hot, too cold or burnt.
 	var/fireloss = 0
 
+	///Lazy list of multipliers for related to mobs, like burn/brute/oxy/tox/stamina damage, hunger, bleeding, electrical conductivity
+	var/list/physiology
+	///Contains an inner armor datum separated from worn armor (I could use the default 'armor' var but it might cause some confusion)
+	VAR_PROTECTED/datum/armor/inner_armor
+	///Used on apply_damage(). Less than 0 means you take extra damage. While over 100 is where no damage is taken at all.
+	var/damage_resistance = 0
+
 	/// The movement intent of the mob (run/wal)
 	var/move_intent = MOVE_INTENT_RUN
 
@@ -46,6 +53,8 @@
 	var/crit_threshold = HEALTH_THRESHOLD_CRIT
 	///When the mob enters hard critical state and is fully incapacitated.
 	var/hardcrit_threshold = HEALTH_THRESHOLD_FULLCRIT
+	///Amount of damage needed to be fully dead
+	var/dead_threshold = HEALTH_THRESHOLD_DEAD
 
 	//Damage dealing vars! These are meaningless outside of specific instances where it's checked and defined.
 	/// Lower bound of damage done by unarmed melee attacks. Mob code is a mess, only works where this is checked for.
@@ -111,8 +120,6 @@
 	var/mob_size = MOB_SIZE_HUMAN
 	/// List of biotypes the mob belongs to. Used by diseases and reagents mainly.
 	var/mob_biotypes = MOB_ORGANIC
-	/// The type of respiration the mob is capable of doing. Used by adjust_oxy_loss.
-	var/mob_respiration_type = RESPIRATION_OXYGEN
 	///more or less efficiency to metabolize helpful/harmful reagents and regulate body temperature..
 	var/metabolism_efficiency = 1
 	///does the mob have distinct limbs?(arms,legs, chest,head)
@@ -169,6 +176,9 @@
 	var/blood_volume = 0
 	/// The default blood volume of the mob. Used primarily for healing bloodloss.
 	var/default_blood_volume = 0
+	/// Lazylist of blood volume modifiers. These multiply blood volume when get_blood_volume(apply_modifiers = TRUE) is used.
+	/// Use set_blood_volume_modifier(multiplier, source) and remove_blood_volume_modifier(source) to modify this.
+	var/list/blood_volume_modifiers = null
 
 	///a list of all status effects the mob has
 	var/list/status_effects
@@ -177,8 +187,6 @@
 	///used for database logging
 	var/last_words
 
-	///whether this can be picked up and held.
-	var/can_be_held = FALSE
 	/// The w_class of the holder when held.
 	var/held_w_class = WEIGHT_CLASS_NORMAL
 	///if it can be held, can it be equipped to any slots? (think pAI's on head)
@@ -191,6 +199,7 @@
 	/// list of all diseases in a mob
 	var/list/diseases
 	var/list/disease_resistances
+	var/list/symptom_resistances
 
 	///Whether the mob is slowed down when dragging another prone mob
 	var/slowed_by_drag = TRUE
@@ -259,3 +268,13 @@
 
 	/// Lazy assoc list of currently applied fishing difficulty modifiers keyed to their source
 	var/list/fishing_difficulty_mods_by_source
+
+	/// When less than or equal to  this distance (but not adjacent), this mob can hear parts of distant whispers, but not the entire message.
+	/// When greater than this distance, this mob cannot hear anything of a whisper.
+	var/eavesdrop_range = EAVESDROP_RANGE
+
+	/// Reference to the unconscious appearance image that appears in place of the mob to other knocked out mobs
+	VAR_FINAL/image/unconscious_appearance
+
+	/// Reduces the effects of EMPs, does NOT negate them even at very high numbers
+	var/emp_protection = EMP_PROTECTION_NONE

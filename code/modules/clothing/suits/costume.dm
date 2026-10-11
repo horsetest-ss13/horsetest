@@ -32,6 +32,7 @@
 	icon_state = "pirate"
 	inhand_icon_state = null
 	body_parts_covered = CHEST|GROIN|ARMS
+	supports_variations_flags = CLOTHING_CERULEAN_MASK_INBETWEEN
 	allowed = list(
 		/obj/item/melee/energy/sword/pirate,
 		/obj/item/clothing/glasses/eyepatch,
@@ -158,6 +159,7 @@
 	icon_state = "owl_wings"
 	icon = 'icons/obj/clothing/suits/costume.dmi'
 	worn_icon = 'icons/mob/clothing/suits/costume.dmi'
+	supports_variations_flags = CLOTHING_CERULEAN_MASK_INBETWEEN
 	inhand_icon_state = null
 	toggle_noun = "wings"
 	body_parts_covered = ARMS|CHEST
@@ -171,6 +173,7 @@
 	desc = "A plush white cloak made of synthetic feathers. Soft to the touch, stylish, and a 2 meter wing span that will drive your captives mad."
 	icon_state = "griffin_wings"
 	inhand_icon_state = null
+	supports_variations_flags = CLOTHING_CERULEAN_MASK_INBETWEEN
 
 /obj/item/clothing/suit/costume/cardborg
 	name = "cardborg suit"
@@ -301,12 +304,12 @@
 /obj/item/clothing/head/hooded/carp_hood/equipped(mob/living/carbon/human/user, slot)
 	..()
 	if (slot & ITEM_SLOT_HEAD)
-		user.faction |= "carp"
+		user.add_faction("carp")
 
 /obj/item/clothing/head/hooded/carp_hood/dropped(mob/living/carbon/human/user)
 	..()
 	if (user.head == src)
-		user.faction -= "carp"
+		user.remove_faction("carp")
 
 /obj/item/clothing/suit/hooded/carp_costume/spaceproof
 	name = "carp space suit"
@@ -468,10 +471,11 @@
 	icon = 'icons/obj/clothing/suits/costume.dmi'
 	worn_icon = 'icons/mob/clothing/suits/costume.dmi'
 	inhand_icon_state = "labcoat"
-	body_parts_covered = CHEST|GROIN|ARMS|LEGS|FEET
+	body_parts_covered = CHEST|GROIN|ARMS|LEGS|FEET|HANDS
 	allowed = list()
 	hoodtype = /obj/item/clothing/head/hooded/human_head
 	species_exception = list(/datum/species/golem) //Finally, flesh
+	clothing_flags = parent_type::clothing_flags | PLASMAMAN_PREVENT_IGNITION
 
 /obj/item/clothing/head/hooded/human_head
 	name = "bloated human head"
@@ -482,6 +486,8 @@
 	body_parts_covered = HEAD
 	flags_cover = HEADCOVERSEYES
 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR|HIDESNOUT
+	clothing_flags = parent_type::clothing_flags | PLASMAMAN_PREVENT_IGNITION | HEADINTERNALS
+	clothing_traits = list(TRAIT_HUMAN_DISGUISE) // Just the helmet is fine because it's attached to the suit
 
 /obj/item/clothing/suit/costume/shrine_maiden
 	name = "shrine maiden's outfit"
@@ -508,12 +514,14 @@
 	desc = "A labcoat imbued with the power of features and freezes."
 	icon_state = "drfreeze_coat"
 	inhand_icon_state = null
+	supports_variations_flags = CLOTHING_CERULEAN_MASK_INBETWEEN
 
 /obj/item/clothing/suit/costume/gothcoat
 	name = "gothic coat"
 	desc = "Perfect for those who want to stalk around a corner of a bar."
 	icon_state = "gothcoat"
 	inhand_icon_state = null
+	supports_variations_flags = CLOTHING_CERULEAN_MASK_INBETWEEN
 	flags_inv = HIDEBELT
 
 /obj/item/clothing/suit/costume/xenos
@@ -605,6 +613,7 @@
 	worn_icon = 'icons/mob/clothing/suits/armor.dmi'
 	inhand_icon_state = null
 	armor_type = /datum/armor/suit_coordinator
+	bodyshapes_with_variations = NONE
 
 /datum/armor/suit_coordinator
 	melee = 25
@@ -706,7 +715,7 @@
 	icon_state = "bear"
 	worn_icon_state = "bear"
 	inhand_icon_state = null
-	body_parts_covered = CHEST|GROIN|ARMS|LEGS
+	body_parts_covered = CHEST|GROIN|ARMS|LEGS|HANDS
 	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT
 	///Are we friendly with bears (wearing the full head/suit combo)?
 	var/full_suit = FALSE
@@ -724,7 +733,7 @@
 	full_suit = FALSE
 	var/mob/living/carbon/human/human_user = user
 	UnregisterSignal(human_user.head, COMSIG_ITEM_DROPPED)
-	user.faction -= FACTION_BEAR
+	user.remove_faction(FACTION_BEAR)
 
 /obj/item/clothing/suit/costume/bear_suit/proc/make_friendly(mob/living/carbon/human/human_user, obj/item/clothing/head/costume/bearpelt/bear_head)
 	if(!istype(human_user))
@@ -733,10 +742,10 @@
 		return
 	RegisterSignal(bear_head, COMSIG_ITEM_DROPPED, PROC_REF(helmet_drop))
 	full_suit = TRUE
-	human_user.faction |= FACTION_BEAR
+	human_user.add_faction(FACTION_BEAR)
 
 /obj/item/clothing/suit/costume/bear_suit/proc/helmet_drop(datum/source, mob/living/user)
 	SIGNAL_HANDLER
 	UnregisterSignal(source, COMSIG_ITEM_DROPPED)
 	full_suit = FALSE
-	user.faction -= FACTION_BEAR
+	user.remove_faction(FACTION_BEAR)

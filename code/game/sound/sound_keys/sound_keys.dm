@@ -715,6 +715,15 @@
 		'sound/items/gauze/bandage_end4.ogg',
 	)
 
+/datum/sound_effect/cloth_rip
+	key = SFX_CLOTH_RIP
+	file_paths = list(
+		'sound/items/handling/cloth/rip1.ogg',
+		'sound/items/handling/cloth/rip2.ogg',
+		'sound/items/handling/cloth/rip3.ogg',
+		'sound/items/handling/cloth/rip4.ogg',
+	)
+
 // Old cloth sounds are named cloth_...1.ogg, I wanted to keep them so these new ones go further down the line.
 /datum/sound_effect/cloth_drop
 	key = SFX_CLOTH_DROP
@@ -1135,4 +1144,26 @@
 		'sound/items/hard_hat/hard_hat_equip1.ogg',
 		'sound/items/hard_hat/hard_hat_equip2.ogg',
 		'sound/items/hard_hat/hard_hat_equip3.ogg',
+	)
+
+/datum/sound_effect/alien_spit_acid
+	key = SFX_ALIEN_SPIT_ACID
+	file_paths = list(
+		'sound/effects/alien/alien_spitacid.ogg',
+		'sound/effects/alien/alien_spitacid2.ogg'
+	)
+
+/datum/sound_effect/void_deflect
+	key = SFX_VOID_DEFLECT
+	file_paths = list(
+		'sound/effects/magic/void_deflect1.ogg',
+		'sound/effects/magic/void_deflect2.ogg',
+		'sound/effects/magic/void_deflect3.ogg',
+	)
+
+/datum/sound_effect/heavy_drop
+	key = SFX_HEAVY_DROP
+	file_paths = list(
+		'sound/effects/heavy_drop1.ogg',
+		'sound/effects/heavy_drop2.ogg',
 	)

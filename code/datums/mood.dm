@@ -36,8 +36,6 @@
 	var/sanity_level = SANITY_LEVEL_NEUTRAL
 	/// Is the owner being punished for low mood? if so, how much?
 	var/insanity_effect = 0
-	/// The screen object for the current mood level
-	var/atom/movable/screen/mood/mood_screen_object
 
 	/// List of mood events currently active on this datum
 	var/list/mood_events = list()
@@ -271,16 +269,17 @@
 	mood = 0
 	shown_mood = 0
 
-	for(var/category in mood_events)
-		var/datum/mood_event/the_event = mood_events[category]
-		var/event_mood = the_event.mood_change
-		event_mood *= max((event_mood > 0) ? positive_mood_modifier : negative_mood_modifier, 0)
-		mood += event_mood
-		if (!the_event.hidden)
-			shown_mood += event_mood
+	if (!HAS_TRAIT(mob_parent, TRAIT_APATHETIC))
+		for(var/category in mood_events)
+			var/datum/mood_event/the_event = mood_events[category]
+			var/event_mood = the_event.mood_change
+			event_mood *= max((event_mood > 0) ? positive_mood_modifier : negative_mood_modifier, 0)
+			mood += event_mood
+			if (!the_event.hidden)
+				shown_mood += event_mood
 
-	mood *= max(mood_modifier, 0)
-	shown_mood *= max(mood_modifier, 0)
+		mood *= max(mood_modifier, 0)
+		shown_mood *= max(mood_modifier, 0)
 
 	switch(mood)
 		if (-INFINITY to MOOD_SAD4)
@@ -307,7 +306,11 @@
 
 /// Updates the mob's mood icon
 /datum/mood/proc/update_mood_icon()
-	if (!(mob_parent.client || mob_parent.hud_used) || isnull(mood_screen_object))
+	if (!mob_parent.client || !mob_parent.hud_used)
+		return
+
+	var/atom/movable/screen/mood/mood_screen_object = mob_parent.hud_used.screen_objects[HUD_MOB_MOOD]
+	if (!istype(mood_screen_object))
 		return
 
 	mood_screen_object.cut_overlays()
@@ -355,9 +358,8 @@
 	SIGNAL_HANDLER
 
 	var/datum/hud/hud = mob_parent.hud_used
-	mood_screen_object = new
+	var/atom/movable/screen/mood/mood_screen_object = hud.add_screen_object(/atom/movable/screen/mood, HUD_MOB_MOOD, HUD_GROUP_INFO, update_screen = TRUE)
 	mood_screen_object.color = "#4b96c4"
-	hud.infodisplay += mood_screen_object
 	RegisterSignal(hud, COMSIG_QDELETING, PROC_REF(unmodify_hud))
 	RegisterSignal(mood_screen_object, COMSIG_SCREEN_ELEMENT_CLICK, PROC_REF(hud_click))
 
@@ -365,12 +367,17 @@
 /datum/mood/proc/unmodify_hud(datum/source)
 	SIGNAL_HANDLER
 
+	var/datum/hud/hud = mob_parent.hud_used
+	if (!hud)
+		return
+
+	var/atom/movable/screen/mood/mood_screen_object = hud.screen_objects[HUD_MOB_MOOD]
 	if(!mood_screen_object)
 		return
-	var/datum/hud/hud = mob_parent.hud_used
-	if(hud?.infodisplay)
-		hud.infodisplay -= mood_screen_object
+
 	QDEL_NULL(mood_screen_object)
+	if (!QDELETED(hud))
+		hud.show_hud(hud.hud_version)
 	UnregisterSignal(hud, COMSIG_QDELETING)
 
 /// Handles clicking on the mood HUD object
@@ -379,7 +386,7 @@
 
 	if(user != mob_parent)
 		return
-	if(user.stat >= UNCONSCIOUS)
+	if(IS_UNCONSCIOUS(user))
 		return
 	print_mood(user)
 
@@ -423,41 +430,44 @@
 			if(81 to INFINITY)
 				msg += "[span_boldwarning("I'm completely wasted.")]<br>"
 
-	msg += span_notice("My current sanity: ") //Long term
-	switch(sanity)
-		if(SANITY_GREAT to INFINITY)
-			msg += "[span_boldnicegreen("My mind feels like a temple!")]<br>"
-		if(SANITY_NEUTRAL to SANITY_GREAT)
-			msg += "[span_nicegreen("I have been feeling great lately!")]<br>"
-		if(SANITY_DISTURBED to SANITY_NEUTRAL)
-			msg += "[span_nicegreen("I have felt quite decent lately.")]<br>"
-		if(SANITY_UNSTABLE to SANITY_DISTURBED)
-			msg += "[span_warning("I'm feeling a little bit unhinged...")]<br>"
-		if(SANITY_CRAZY to SANITY_UNSTABLE)
-			msg += "[span_warning("I'm freaking out!!")]<br>"
-		if(SANITY_INSANE to SANITY_CRAZY)
-			msg += "[span_boldwarning("AHAHAHAHAHAHAHAHAHAH!!")]<br>"
+	if (HAS_TRAIT(mob_parent, TRAIT_APATHETIC))
+		msg += span_notice("My mood: [span_grey("I don't feel anything.")]<br>")
+	else
+		msg += span_notice("My current sanity: ") //Long term
+		switch(sanity)
+			if(SANITY_GREAT to INFINITY)
+				msg += "[span_boldnicegreen("My mind feels like a temple!")]<br>"
+			if(SANITY_NEUTRAL to SANITY_GREAT)
+				msg += "[span_nicegreen("I have been feeling great lately!")]<br>"
+			if(SANITY_DISTURBED to SANITY_NEUTRAL)
+				msg += "[span_nicegreen("I have felt quite decent lately.")]<br>"
+			if(SANITY_UNSTABLE to SANITY_DISTURBED)
+				msg += "[span_warning("I'm feeling a little bit unhinged...")]<br>"
+			if(SANITY_CRAZY to SANITY_UNSTABLE)
+				msg += "[span_warning("I'm freaking out!!")]<br>"
+			if(SANITY_INSANE to SANITY_CRAZY)
+				msg += "[span_boldwarning("AHAHAHAHAHAHAHAHAHAH!!")]<br>"
 
-	msg += span_notice("My current mood: ") //Short term
-	switch(mood_level)
-		if(MOOD_LEVEL_SAD4)
-			msg += "[span_boldwarning("I wish I was dead!")]<br>"
-		if(MOOD_LEVEL_SAD3)
-			msg += "[span_boldwarning("I feel terrible...")]<br>"
-		if(MOOD_LEVEL_SAD2)
-			msg += "[span_boldwarning("I feel very upset.")]<br>"
-		if(MOOD_LEVEL_SAD1)
-			msg += "[span_warning("I'm a bit sad.")]<br>"
-		if(MOOD_LEVEL_NEUTRAL)
-			msg += "[span_grey("I'm alright.")]<br>"
-		if(MOOD_LEVEL_HAPPY1)
-			msg += "[span_nicegreen("I feel pretty okay.")]<br>"
-		if(MOOD_LEVEL_HAPPY2)
-			msg += "[span_boldnicegreen("I feel pretty good.")]<br>"
-		if(MOOD_LEVEL_HAPPY3)
-			msg += "[span_boldnicegreen("I feel amazing!")]<br>"
-		if(MOOD_LEVEL_HAPPY4)
-			msg += "[span_boldnicegreen("I love life!")]<br>"
+		msg += span_notice("My current mood: ") //Short term
+		switch(mood_level)
+			if(MOOD_LEVEL_SAD4)
+				msg += "[span_boldwarning("I wish I was dead!")]<br>"
+			if(MOOD_LEVEL_SAD3)
+				msg += "[span_boldwarning("I feel terrible...")]<br>"
+			if(MOOD_LEVEL_SAD2)
+				msg += "[span_boldwarning("I feel very upset.")]<br>"
+			if(MOOD_LEVEL_SAD1)
+				msg += "[span_warning("I'm a bit sad.")]<br>"
+			if(MOOD_LEVEL_NEUTRAL)
+				msg += "[span_grey("I'm alright.")]<br>"
+			if(MOOD_LEVEL_HAPPY1)
+				msg += "[span_nicegreen("I feel pretty okay.")]<br>"
+			if(MOOD_LEVEL_HAPPY2)
+				msg += "[span_boldnicegreen("I feel pretty good.")]<br>"
+			if(MOOD_LEVEL_HAPPY3)
+				msg += "[span_boldnicegreen("I feel amazing!")]<br>"
+			if(MOOD_LEVEL_HAPPY4)
+				msg += "[span_boldnicegreen("I love life!")]<br>"
 
 	var/list/additional_lines = list()
 	SEND_SIGNAL(user, COMSIG_CARBON_MOOD_CHECK, additional_lines)
@@ -484,6 +494,9 @@
 					msg += "[span_boldnicegreen(event.description)]<br>"
 	else
 		msg += "&bull; [span_grey("I don't have much of a reaction to anything right now.")]<br>"
+
+	if(LAZYLEN(mob_parent.personalities))
+		msg += span_notice("You know yourself to be [mob_parent.get_parsonality_string()].<br>")
 
 	if(LAZYLEN(mob_parent.quirks))
 		msg += span_notice("You have these quirks: [mob_parent.get_quirk_string(FALSE, CAT_QUIRK_ALL)].")
@@ -574,6 +587,9 @@
 	if (amount > maximum)
 		amount = min(amount, maximum)
 
+	if (HAS_TRAIT(mob_parent, TRAIT_APATHETIC))
+		amount = SANITY_NEUTRAL
+
 	if(amount == sanity) //Prevents stuff from flicking around.
 		return
 
@@ -581,35 +597,21 @@
 	SEND_SIGNAL(mob_parent, COMSIG_CARBON_SANITY_UPDATE, amount)
 	switch(sanity)
 		if(SANITY_INSANE to SANITY_CRAZY)
-			set_insanity_effect(MAJOR_INSANITY_PEN)
-			mob_parent.add_movespeed_modifier(/datum/movespeed_modifier/sanity/insane)
-			mob_parent.add_actionspeed_modifier(/datum/actionspeed_modifier/low_sanity)
 			sanity_level = SANITY_LEVEL_INSANE
 		if(SANITY_CRAZY to SANITY_UNSTABLE)
-			set_insanity_effect(MINOR_INSANITY_PEN)
-			mob_parent.add_movespeed_modifier(/datum/movespeed_modifier/sanity/crazy)
-			mob_parent.add_actionspeed_modifier(/datum/actionspeed_modifier/low_sanity)
 			sanity_level = SANITY_LEVEL_CRAZY
 		if(SANITY_UNSTABLE to SANITY_DISTURBED)
-			set_insanity_effect(0)
-			mob_parent.add_movespeed_modifier(/datum/movespeed_modifier/sanity/disturbed)
-			mob_parent.add_actionspeed_modifier(/datum/actionspeed_modifier/low_sanity)
 			sanity_level = SANITY_LEVEL_UNSTABLE
 		if(SANITY_DISTURBED to SANITY_NEUTRAL)
-			set_insanity_effect(0)
-			mob_parent.remove_movespeed_modifier(MOVESPEED_ID_SANITY)
-			mob_parent.remove_actionspeed_modifier(ACTIONSPEED_ID_SANITY)
 			sanity_level = SANITY_LEVEL_DISTURBED
 		if(SANITY_NEUTRAL+1 to SANITY_GREAT+1) //shitty hack but +1 to prevent it from responding to super small differences
-			set_insanity_effect(0)
-			mob_parent.remove_movespeed_modifier(MOVESPEED_ID_SANITY)
-			mob_parent.add_actionspeed_modifier(/datum/actionspeed_modifier/high_sanity)
 			sanity_level = SANITY_LEVEL_NEUTRAL
 		if(SANITY_GREAT+1 to INFINITY)
-			set_insanity_effect(0)
-			mob_parent.remove_movespeed_modifier(MOVESPEED_ID_SANITY)
-			mob_parent.add_actionspeed_modifier(/datum/actionspeed_modifier/high_sanity)
 			sanity_level = SANITY_LEVEL_GREAT
+
+	set_crit_threshold()
+	set_movespeed_effect()
+	set_actionspeed_effect()
 
 	// Crazy or insane = add some uncommon hallucinations
 	if(sanity_level >= SANITY_LEVEL_CRAZY)
@@ -627,12 +629,38 @@
 /datum/mood/proc/adjust_sanity(amount, minimum = SANITY_INSANE, maximum = SANITY_GREAT, override = FALSE)
 	set_sanity(sanity + amount, minimum, maximum, override)
 
-/// Sets the insanity effect on the mob
-/datum/mood/proc/set_insanity_effect(newval)
+/// Sets the crit threshold of the mob
+/datum/mood/proc/set_crit_threshold()
+	var/newval = 0
+	switch(sanity_level)
+		if(SANITY_LEVEL_INSANE)
+			newval = MAJOR_INSANITY_PEN
+		if(SANITY_LEVEL_CRAZY)
+			newval = MINOR_INSANITY_PEN
 	if (newval == insanity_effect)
 		return
 	mob_parent.crit_threshold = (mob_parent.crit_threshold - insanity_effect) + newval
 	insanity_effect = newval
+
+/datum/mood/proc/set_movespeed_effect()
+	switch(sanity_level)
+		if(SANITY_LEVEL_INSANE)
+			mob_parent.add_movespeed_modifier(/datum/movespeed_modifier/sanity/insane)
+		if(SANITY_LEVEL_CRAZY)
+			mob_parent.add_movespeed_modifier(/datum/movespeed_modifier/sanity/crazy)
+		if(SANITY_LEVEL_UNSTABLE)
+			mob_parent.add_movespeed_modifier(/datum/movespeed_modifier/sanity/disturbed)
+		else
+			mob_parent.remove_movespeed_modifier(MOVESPEED_ID_SANITY)
+
+/datum/mood/proc/set_actionspeed_effect()
+	switch(sanity_level)
+		if(SANITY_LEVEL_INSANE, SANITY_LEVEL_CRAZY, SANITY_LEVEL_UNSTABLE)
+			mob_parent.add_actionspeed_modifier(/datum/actionspeed_modifier/low_sanity)
+		if(SANITY_LEVEL_NEUTRAL, SANITY_LEVEL_GREAT)
+			mob_parent.add_actionspeed_modifier(/datum/actionspeed_modifier/high_sanity)
+		else
+			mob_parent.remove_actionspeed_modifier(ACTIONSPEED_ID_SANITY)
 
 /// Removes all temporary moods
 /datum/mood/proc/remove_temp_moods()
@@ -660,6 +688,12 @@
 		if (moodlet.category == category)
 			return TRUE
 	return FALSE
+
+
+/datum/mood/dummy
+
+/datum/mood/dummy/set_sanity(amount, minimum, maximum, override)
+	return
 
 #undef MINOR_INSANITY_PEN
 #undef MAJOR_INSANITY_PEN

@@ -13,6 +13,8 @@ GLOBAL_LIST_INIT(bitflags, list(1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 204
 #define DF_ISPROCESSING (1<<2)
 /// Placed on datums that have a static, constant reference. Primarily only used for turfs.
 #define DF_STATIC_OBJECT (1<<3)
+/// Set on datums that should be tracked by the event logger.
+#define DF_EVLOGGING (1<<4)
 
 //FLAGS BITMASK
 // scroll down before changing the numbers on these
@@ -234,6 +236,7 @@ GLOBAL_LIST_INIT(bitflags, list(1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 204
 #define ZAP_DEFAULT_FLAGS ZAP_MOB_STUN | ZAP_MOB_DAMAGE | ZAP_OBJ_DAMAGE
 #define ZAP_FUSION_FLAGS ZAP_OBJ_DAMAGE | ZAP_MOB_DAMAGE | ZAP_MOB_STUN
 #define ZAP_SUPERMATTER_FLAGS ZAP_GENERATES_POWER
+#define ZAP_GIZMO_FLAGS ZAP_MOB_DAMAGE | ZAP_OBJ_DAMAGE
 
 ///Object will protect itself.
 #define EMP_PROTECT_SELF (1<<0)
@@ -318,12 +321,8 @@ GLOBAL_LIST_INIT(bitflags, list(1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 204
 #define IGNORE_INCAPACITATED (1<<3)
 /// Used to prevent important slowdowns from being abused by drugs like kronkaine
 #define IGNORE_SLOWDOWNS (1<<4)
-
-// Spacevine-related flags
-/// Is the spacevine / flower bud heat resistant
-#define SPACEVINE_HEAT_RESISTANT (1 << 0)
-/// Is the spacevine / flower bud cold resistant
-#define SPACEVINE_COLD_RESISTANT (1 << 1)
+/// Cancel the action if the user does another action (mainly via clicking)
+#define DO_AFTER_CHECK_NEXT_MOVE (1<<5)
 
 // Flags for flora structures
 #define FLORA_HERBAL (1 << 0)
@@ -339,6 +338,18 @@ GLOBAL_LIST_INIT(bitflags, list(1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 204
 #define EMOTE_IMPORTANT (1<<2)
 /// Emote only prints to runechat, not to the chat window
 #define EMOTE_RUNECHAT (1<<3)
+
+// Emote usability flags
+/// Emote can be used while unconscious
+#define EMOTE_CANUSE_UNCONSCIOUS (1<<0)
+/// Emote can be used while in soft crit
+#define EMOTE_CANUSE_SOFTCRIT (1<<1)
+/// Emote can be used while in hard crit
+#define EMOTE_CANUSE_HARDCRIT (1<<2)
+/// Emote can be used while dead
+#define EMOTE_CANUSE_DEAD (1<<3)
+/// Emote requires that the user has at least one usable hand
+#define EMOTE_CANUSE_REQUIRE_HANDS (1<<4)
 
 // Flags for the empath component
 /// Can the empath see if a living mob has combat mode on
@@ -359,3 +370,19 @@ GLOBAL_LIST_INIT(bitflags, list(1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 204
 #define EMPATH_SEE_COLD (1<<7)
 /// Can the empath see if living mob has the fundamentally evil trait
 #define EMPATH_SEE_EVIL (1<<8)
+
+// Container flags for get_loose_container
+/// Count mob inventory as a valid container
+#define LOOSE_CONTAINER_INCLUDE_INVENTORY (1<<0)
+/// Count modsuits with at least one sealed part as valid containers, even if mob inventory is not a valid container
+#define LOOSE_CONTAINER_INCLUDE_SEALED_MODSUIT (1<<1)
+/// Count atom storage as a valid container
+#define LOOSE_CONTAINER_INCLUDE_STORAGE (1<<2)
+/// Count closets as a valid container
+#define LOOSE_CONTAINER_INCLUDE_CLOSET (1<<3)
+/// Count vehicles as a valid container
+#define LOOSE_CONTAINER_INCLUDE_VEHICLE (1<<4)
+/// Count mech equipment (particularly cargo holds and sleepers) as a valid container
+#define LOOSE_CONTAINER_INCLUDE_MECH_EQUIPMENT (1<<5)
+/// Count stomachs as a valid container (ew)
+#define LOOSE_CONTAINER_INCLUDE_STOMACH (1<<6)

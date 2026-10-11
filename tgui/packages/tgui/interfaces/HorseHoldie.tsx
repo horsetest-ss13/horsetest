@@ -18,7 +18,12 @@ type HorseData = {
   temperament: number;
   intelligence: number;
   speed: number;
+  age: number;
+  wasBorn?: boolean;
+  retired?: boolean;
+  summoned?: boolean;
   storedTime: number;
+  retiredTime?: number;
 };
 
 type SlotData = {
@@ -31,23 +36,29 @@ type NearbyHorse = {
   ref: string;
   name: string;
   breed: string;
+  age: number;
 };
 
 type Data = {
   ckey: string;
   slots: SlotData[];
   nearbyHorses: NearbyHorse[];
+  retiredHorses: HorseData[];
+  maxRetirementAge: number;
   error?: string;
 };
 
 const HorseSlot = (props: {
   slot: SlotData;
   nearbyHorses: NearbyHorse[];
+  maxRetirementAge: number;
   onStore: (slot: number, horseRef: string) => void;
-  onRetrieve: (slot: number) => void;
+  onSummon: (slot: number) => void;
+  onUnsummon: (slot: number) => void;
   onClear: (slot: number) => void;
 }) => {
-  const { slot, nearbyHorses, onStore, onRetrieve, onClear } = props;
+  const { slot, nearbyHorses, maxRetirementAge, onStore, onSummon, onUnsummon, onClear } =
+    props;
   const [selectedHorse, setSelectedHorse] = useState<string | null>(null);
 
   return (
@@ -76,6 +87,9 @@ const HorseSlot = (props: {
             <LabeledList.Item label="Breed">
               {slot.horse.breed}
             </LabeledList.Item>
+            <LabeledList.Item label="Age">
+              {slot.horse.age} / {maxRetirementAge}
+            </LabeledList.Item>
             <LabeledList.Item label="Speed">
               {slot.horse.speed}
             </LabeledList.Item>
@@ -87,14 +101,25 @@ const HorseSlot = (props: {
             </LabeledList.Item>
           </LabeledList>
           <Box mt={1}>
-            <Button
-              fluid
-              icon="download"
-              color="good"
-              onClick={() => onRetrieve(slot.slot)}
-            >
-              Retrieve {slot.horse.name}
-            </Button>
+            {slot.horse.summoned ? (
+              <Button
+                fluid
+                icon="upload"
+                color="average"
+                onClick={() => onUnsummon(slot.slot)}
+              >
+                Recall {slot.horse.name}
+              </Button>
+            ) : (
+              <Button
+                fluid
+                icon="magic"
+                color="good"
+                onClick={() => onSummon(slot.slot)}
+              >
+                Summon {slot.horse.name}
+              </Button>
+            )}
           </Box>
         </Box>
       ) : (
@@ -111,7 +136,7 @@ const HorseSlot = (props: {
                   placeholder="Select a horse..."
                   options={nearbyHorses.map((h) => ({
                     value: h.ref,
-                    displayText: `${h.name} (${h.breed})`,
+                    displayText: `${h.name} (${h.breed}, age ${h.age})`,
                   }))}
                   onSelected={(val) => setSelectedHorse(val as string)}
                 />
@@ -145,7 +170,8 @@ const HorseSlot = (props: {
 
 export const HorseHoldie = () => {
   const { act, data } = useBackend<Data>();
-  const { ckey, slots, nearbyHorses, error } = data;
+  const { ckey, slots, nearbyHorses, retiredHorses, maxRetirementAge, error } =
+    data;
 
   if (error) {
     return (
@@ -163,8 +189,12 @@ export const HorseHoldie = () => {
     act('store', { slot, horse_ref: horseRef });
   };
 
-  const handleRetrieve = (slot: number) => {
-    act('retrieve', { slot });
+  const handleSummon = (slot: number) => {
+    act('summon', { slot });
+  };
+
+  const handleUnsummon = (slot: number) => {
+    act('unsummon', { slot });
   };
 
   const handleClear = (slot: number) => {
@@ -176,8 +206,10 @@ export const HorseHoldie = () => {
       <Window.Content scrollable>
         <Section title="Horse Holdie">
           <Box color="label" mb={1}>
-            Store your horses here to save them between rounds! Linked to your
-            account: {ckey}
+            Store your horses here to save them between rounds! Summon them for
+            the shift and recall them anytime from the holdie. Horses age one
+            year the first time they are summoned each round and retire at age{' '}
+            {maxRetirementAge}. Linked to your account: {ckey}
           </Box>
         </Section>
 
@@ -186,11 +218,46 @@ export const HorseHoldie = () => {
             key={slot.slot}
             slot={slot}
             nearbyHorses={nearbyHorses}
+            maxRetirementAge={maxRetirementAge}
             onStore={handleStore}
-            onRetrieve={handleRetrieve}
+            onSummon={handleSummon}
+            onUnsummon={handleUnsummon}
             onClear={handleClear}
           />
         ))}
+
+        {retiredHorses?.length > 0 && (
+          <Section title="Retired Horses">
+            <Box color="label" mb={1}>
+              These horses have finished their careers and are saved to your
+              account.
+            </Box>
+            {retiredHorses.map((horse, index) => (
+              <Section key={index} title={horse.name}>
+                <LabeledList>
+                  <LabeledList.Item label="Breed">
+                    {horse.breed}
+                  </LabeledList.Item>
+                  <LabeledList.Item label="Gender">
+                    {horse.gender}
+                  </LabeledList.Item>
+                  <LabeledList.Item label="Final Age">
+                    {horse.age}
+                  </LabeledList.Item>
+                  <LabeledList.Item label="Speed">
+                    {horse.speed}
+                  </LabeledList.Item>
+                  <LabeledList.Item label="Intelligence">
+                    {horse.intelligence}
+                  </LabeledList.Item>
+                  <LabeledList.Item label="Temperament">
+                    {horse.temperament}
+                  </LabeledList.Item>
+                </LabeledList>
+              </Section>
+            ))}
+          </Section>
+        )}
       </Window.Content>
     </Window>
   );

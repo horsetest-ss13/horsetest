@@ -3,7 +3,7 @@
  */
 SUBSYSTEM_DEF(id_access)
 	name = "IDs and Access"
-	flags = SS_NO_FIRE
+	ss_flags = SS_NO_FIRE
 
 	/// Dictionary of access flags. Keys are accesses. Values are their associated bitflags.
 	var/list/flags_by_access = list()
@@ -216,21 +216,18 @@ SUBSYSTEM_DEF(id_access)
 		var/datum/id_trim/trim = trim_singletons_by_path[trim_path]
 		centcom_job_templates[trim_path] = trim.assignment
 
-	var/list/all_pda_paths = typesof(/obj/item/modular_computer/pda)
-	var/list/pda_regions = PDA_PAINTING_REGIONS
-	for(var/pda_path in all_pda_paths)
-		if(!(pda_path in pda_regions))
+	for(var/obj/item/modular_computer/pda/crew/pda_path as anything in subtypesof(/obj/item/modular_computer/pda/crew))
+		if(isnull(pda_path::painting_region))
 			continue
 
-		var/list/region_whitelist = pda_regions[pda_path]
 		for(var/access_txt in sub_department_managers_tgui)
 			var/list/manager_info = sub_department_managers_tgui[access_txt]
 			var/list/manager_regions = manager_info["regions"]
-			for(var/whitelisted_region in region_whitelist)
-				if(!(whitelisted_region in manager_regions))
+			for(var/whitelisted_region in manager_regions)
+				if(pda_path::painting_region != whitelisted_region)
 					continue
 				var/list/manager_pdas = manager_info["pdas"]
-				var/obj/item/modular_computer/pda/fake_pda = pda_path
+				var/obj/item/modular_computer/pda/crew/fake_pda = pda_path
 				manager_pdas[pda_path] = initial(fake_pda.name)
 				station_pda_templates[pda_path] = initial(fake_pda.name)
 
@@ -508,7 +505,7 @@ SUBSYSTEM_DEF(id_access)
 	id_card.add_wildcards(trim.wildcard_access, mode = TRY_ADD_ALL)
 	if(istype(trim, /datum/id_trim/job))
 		var/datum/id_trim/job/job_trim = trim // Here is where we update a player's paycheck department for the purposes of discounts/paychecks.
-		id_card.registered_account.account_job.paycheck_department = job_trim.job.paycheck_department
+		id_card.registered_account.account_job = job_trim.job
 
 	// Apply any currently active RETA grants to this card with updated trim access
 	apply_active_reta_grants_to_card(id_card)

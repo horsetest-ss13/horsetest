@@ -117,7 +117,7 @@
 
 	var/obj/structure/closet/supplypod/extractionpod/pod = source
 	// Handle the pod returning
-	pod.startExitSequence(pod)
+	pod.start_exit_sequence(pod)
 
 	if(ishuman(person_sent))
 		var/mob/living/carbon/human/target = person_sent
@@ -249,6 +249,11 @@
 
 	for(var/obj/item/item in victim_belongings)
 		item.forceMove(dropoff_location)
+
+	if(ishuman(victim))
+		var/mob/living/carbon/human/human_victim = victim
+		if (istype(human_victim.w_uniform, /obj/item/clothing/under/misc/syndicate_souvenir))
+			victim.client?.give_award(/datum/award/achievement/misc/souvenir, victim)
 
 	victim.flash_act()
 	victim.adjust_eye_blur(3 SECONDS)

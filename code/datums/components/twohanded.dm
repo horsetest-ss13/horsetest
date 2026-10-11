@@ -26,6 +26,8 @@
 	var/icon_wielded = FALSE
 	/// Reference to the offhand created for the item
 	var/obj/item/offhand/offhand_item = null
+	/// The index of the offhand item.
+	var/offhand_index = 0
 	/// The amount of increase recived from sharpening the item
 	var/sharpened_increase = 0
 	/// A callback on the parent to be called when the item is wielded
@@ -119,7 +121,7 @@
 		src.force_multiplier = force_multiplier
 	if(!isnull(force_wielded))
 		src.force_wielded = force_wielded
-	if(isnull(force_unwielded))
+	if(!isnull(force_unwielded))
 		src.force_unwielded = force_unwielded
 	if(icon_wielded)
 		src.icon_wielded = icon_wielded
@@ -147,6 +149,10 @@
 	RegisterSignal(parent, COMSIG_ITEM_SHARPEN_ACT, PROC_REF(on_sharpen))
 	RegisterSignal(parent, COMSIG_ITEM_APPLY_FANTASY_BONUSES, PROC_REF(apply_fantasy_bonuses))
 	RegisterSignal(parent, COMSIG_ITEM_REMOVE_FANTASY_BONUSES, PROC_REF(remove_fantasy_bonuses))
+	RegisterSignal(parent, COMSIG_ATOM_FINALIZE_MATERIAL_EFFECTS, PROC_REF(on_materials_updated))
+	RegisterSignal(parent, COMSIG_ATOM_FINALIZE_REMOVE_MATERIAL_EFFECTS, PROC_REF(on_materials_updated))
+	RegisterSignal(parent, COMSIG_ATOM_SINGLE_MATERIAL_EFFECT_APPLY, PROC_REF(on_material_apply))
+	RegisterSignal(parent, COMSIG_ATOM_SINGLE_MATERIAL_EFFECT_REMOVE, PROC_REF(on_material_remove))
 
 // Remove all siginals registered to the parent item
 /datum/component/two_handed/UnregisterFromParent()
@@ -160,6 +166,8 @@
 		COMSIG_ITEM_SHARPEN_ACT,
 		COMSIG_ITEM_APPLY_FANTASY_BONUSES,
 		COMSIG_ITEM_REMOVE_FANTASY_BONUSES,
+		COMSIG_ATOM_FINALIZE_MATERIAL_EFFECTS,
+		COMSIG_ATOM_FINALIZE_REMOVE_MATERIAL_EFFECTS,
 	))
 
 /// Triggered on equip of the item containing the component
@@ -235,6 +243,7 @@
 		return COMPONENT_EQUIPPED_FAILED // blocked wield from item
 	if (wield_callback?.Invoke(parent, user) & COMPONENT_TWOHANDED_BLOCK_WIELD)
 		return
+
 	wielded = TRUE
 	ADD_TRAIT(parent, TRAIT_WIELDED, REF(src))
 	RegisterSignal(user, COMSIG_MOB_SWAPPING_HANDS, PROC_REF(on_swapping_hands))
@@ -266,7 +275,9 @@
 	offhand_item.wielded = TRUE
 	RegisterSignal(offhand_item, COMSIG_ITEM_DROPPED, PROC_REF(on_drop))
 	RegisterSignal(offhand_item, COMSIG_QDELETING, PROC_REF(on_destroy))
-	user.put_in_inactive_hand(offhand_item)
+	offhand_index = user.get_inactive_hand_index()
+	user.put_in_hand(offhand_item, offhand_index)
+	RegisterSignal(user, COMSIG_MOB_CYCLE_HAND_INDEX(offhand_index), PROC_REF(on_cycling_hands))
 
 /**
  * Unwield the two handed item
@@ -335,6 +346,8 @@
 		qdel(offhand_item)
 	// Clear any old refrence to an item that should be gone now
 	offhand_item = null
+	UnregisterSignal(user, COMSIG_MOB_CYCLE_HAND_INDEX(offhand_index))
+	offhand_index = 0
 
 /**
  * on_attack triggers on attack with the parent item
@@ -370,13 +383,18 @@
 /**
  * on_swap_hands Triggers on swapping hands, blocks swap if the other hand is busy
  */
-/datum/component/two_handed/proc/on_swapping_hands(mob/user, obj/item/held_item)
+/datum/component/two_handed/proc/on_swapping_hands(mob/user, held_index, silent)
 	SIGNAL_HANDLER
 
-	if(!held_item)
-		return
-	if(held_item == parent)
+	if(held_index == offhand_index)
+		if(!silent)
+			to_chat(user, span_warning("\The [user.get_held_index_name(held_index)] is too busy holding [parent]."))
 		return COMPONENT_BLOCK_SWAP
+
+/datum/component/two_handed/proc/on_cycling_hands(mob/source, cycle_dir, climb, silent)
+	SIGNAL_HANDLER
+
+	return COMPONENT_CONTINUE_CYCLE
 
 /**
  * on_sharpen Triggers on usage of a sharpening stone on the item
@@ -418,6 +436,30 @@
 	if(wielded && ismob(source.loc))
 		unwield(source.loc)
 	force_multiplier = source.reset_fantasy_variable("force_multiplier", force_multiplier)
+
+/datum/component/two_handed/proc/on_materials_updated(obj/item/source, list/materials, datum/material/main_material)
+	SIGNAL_HANDLER
+	// With materials assigned we need to update our forces.
+	if (wielded)
+		force_wielded = source.force
+	else
+		force_unwielded = source.force
+
+/datum/component/two_handed/proc/on_material_apply(obj/item/source, datum/material/material, amount, multiplier)
+	SIGNAL_HANDLER
+	// Opposite state's force needs to be calculated for each material's effect
+	if (wielded)
+		force_unwielded *= GET_MATERIAL_MODIFIER(source.get_material_force_modifier(material, source.sharpness), multiplier)
+	else
+		force_wielded *= GET_MATERIAL_MODIFIER(source.get_material_force_modifier(material, source.sharpness), multiplier)
+
+/datum/component/two_handed/proc/on_material_remove(obj/item/source, datum/material/material, amount, multiplier)
+	SIGNAL_HANDLER
+	// Same as appliation but inversed
+	if (wielded)
+		force_unwielded /= GET_MATERIAL_MODIFIER(source.get_material_force_modifier(material, source.sharpness), multiplier)
+	else
+		force_wielded /= GET_MATERIAL_MODIFIER(source.get_material_force_modifier(material, source.sharpness), multiplier)
 
 /**
  * The offhand dummy item for two handed items

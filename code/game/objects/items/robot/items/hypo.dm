@@ -6,7 +6,7 @@
 		/datum/reagent/medicine/c2/libital,\
 		/datum/reagent/medicine/c2/multiver,\
 		/datum/reagent/medicine/salglu_solution,\
-		/datum/reagent/medicine/spaceacillin\
+		/datum/reagent/medicine/spaceacillin,\
 	)
 #define EXPANDED_MEDICAL_REAGENTS list(\
 		/datum/reagent/medicine/haloperidol,\
@@ -17,7 +17,7 @@
 		/datum/reagent/medicine/oxandrolone,\
 		/datum/reagent/medicine/pen_acid,\
 		/datum/reagent/medicine/rezadone,\
-		/datum/reagent/medicine/sal_acid\
+		/datum/reagent/medicine/sal_acid,\
 	)
 #define HACKED_MEDICAL_REAGENTS list(\
 		/datum/reagent/toxin/cyanide,\
@@ -25,31 +25,32 @@
 		/datum/reagent/toxin/heparin,\
 		/datum/reagent/toxin/lexorin,\
 		/datum/reagent/toxin/mutetoxin,\
-		/datum/reagent/toxin/sodium_thiopental\
+		/datum/reagent/toxin/sodium_thiopental,\
 	)
 #define BASE_PEACE_REAGENTS list(\
 		/datum/reagent/peaceborg/confuse,\
 		/datum/reagent/pax/peaceborg,\
-		/datum/reagent/peaceborg/tire\
+		/datum/reagent/peaceborg/tire,\
 	)
 #define HACKED_PEACE_REAGENTS list(\
 		/datum/reagent/toxin/cyanide,\
 		/datum/reagent/toxin/fentanyl,\
 		/datum/reagent/toxin/sodium_thiopental,\
 		/datum/reagent/toxin/staminatoxin,\
-		/datum/reagent/toxin/sulfonal\
+		/datum/reagent/toxin/sulfonal,\
 	)
 #define BASE_CLOWN_REAGENTS list(\
-		/datum/reagent/consumable/laughter\
+		/datum/reagent/consumable/laughter,\
 	)
 #define HACKED_CLOWN_REAGENTS list(\
-		/datum/reagent/consumable/superlaughter\
+		/datum/reagent/consumable/superlaughter,\
 	)
 #define BASE_SYNDICATE_REAGENTS list(\
 		/datum/reagent/medicine/inacusiate,\
 		/datum/reagent/medicine/morphine,\
 		/datum/reagent/medicine/potass_iodide,\
-		/datum/reagent/medicine/syndicate_nanites\
+		/datum/reagent/medicine/syndicate_nanites,\
+		/datum/reagent/medicine/atropine,\
 	)
 #define BASE_SERVICE_REAGENTS list(/datum/reagent/consumable/applejuice, /datum/reagent/consumable/banana,\
 		/datum/reagent/consumable/berryjuice, /datum/reagent/consumable/cherryjelly, /datum/reagent/consumable/coffee,\
@@ -137,6 +138,8 @@
 	var/datum/reagent/selected_reagent
 	/// The theme for our UI (hacked hypos get syndicate UI)
 	var/tgui_theme = "ntos"
+	/// Whether this hypo should be upgradable to enable piercing
+	var/allow_piercing = TRUE
 
 /obj/item/reagent_containers/borghypo/Initialize(mapload)
 	. = ..()
@@ -332,6 +335,7 @@
 	dispensed_temperature = WATER_MATTERSTATE_CHANGE_TEMP //Water stays wet, ice stays ice
 	default_reagent_types = BASE_SERVICE_REAGENTS
 	expanded_reagent_types = EXPANDED_SERVICE_REAGENTS
+	allow_piercing = FALSE // Can't be used on carbons, so this prevents applying the piercing hypo upgrade to no effect.
 	var/reagent_search_container = REAGENT_CONTAINER_BEVAPPARATUS
 
 /obj/item/reagent_containers/borghypo/borgshaker/ui_interact(mob/user, datum/tgui/ui)
@@ -350,11 +354,11 @@
 			if(!iscyborg(usr))
 				return
 			if (reagent_search_container == REAGENT_CONTAINER_BEVAPPARATUS)
-				var/obj/item/borg/apparatus/beaker/service/beverage_apparatus = (locate() in user.model.modules) || (locate() in user.held_items)
+				var/obj/item/borg/apparatus/beaker/service/beverage_apparatus = (locate() in user.model.modules) || (user.is_holding_item_of_type(__IMPLIED_TYPE__))
 				if (!isnull(beverage_apparatus) && !isnull(beverage_apparatus.stored))
 					beverage_apparatus.stored.reagents.ui_interact(user)
 			else if (reagent_search_container == REAGENT_CONTAINER_INTERNAL)
-				var/obj/item/reagent_containers/cup/beaker/large/internal_beaker = (locate() in user.model.modules) || (locate() in user.held_items)
+				var/obj/item/reagent_containers/cup/beaker/large/internal_beaker = (locate() in user.model.modules) || (user.is_holding_item_of_type(__IMPLIED_TYPE__))
 				if (!isnull(internal_beaker))
 					internal_beaker.reagents.ui_interact(user)
 		if ("set_preferred_container")
@@ -387,7 +391,7 @@
 
 	if(iscyborg(user))
 		var/mob/living/silicon/robot/cyborg = user
-		var/obj/item/borg/apparatus/beaker/service/beverage_apparatus = (locate() in cyborg.model.modules) || (locate() in cyborg.held_items)
+		var/obj/item/borg/apparatus/beaker/service/beverage_apparatus = (locate() in cyborg.model.modules) || (user.is_holding_item_of_type(__IMPLIED_TYPE__))
 
 		if (isnull(beverage_apparatus))
 			to_chat(user, span_warning("This unit has no beverage apparatus. This shouldn't be possible. Delete yourself, NOW!"))
@@ -431,6 +435,7 @@
 	recharge_time = 6 //Double the recharge time too, for the same reason.
 	dispensed_temperature = WATER_MATTERSTATE_CHANGE_TEMP
 	default_reagent_types = EXPANDED_SERVICE_REAGENTS
+	allow_piercing = FALSE // Can't be used on carbons, so this prevents applying the piercing hypo upgrade to no effect.
 
 /obj/item/reagent_containers/borghypo/condiment_synthesizer/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)

@@ -1,3 +1,7 @@
+#define HORSE_RETIREMENT_AGE 30
+#define HORSE_WILD_AGE_MIN 10
+#define HORSE_WILD_AGE_MAX 15
+
 /mob/living/basic/horse
 	name = "horse"
 	desc = "A majestic equine creature. Larger and stronger than a pony."
@@ -41,7 +45,11 @@
 	var/sspeed = 30
 	var/max_speed = 100
 	var/tamed_points = 150
-	var/datum/horse_family_tree/family_tree
+	var/age = 0
+	var/was_born = FALSE
+	var/retired = FALSE
+	var/last_aged_round
+	var/datum/stored_horse/holdie_source
 /datum/emote/horse
 	mob_type_allowed_typecache = /mob/living/basic/horse
 	mob_type_blacklist_typecache = list()
@@ -59,23 +67,26 @@
 	emote_type = EMOTE_VISIBLE | EMOTE_AUDIBLE
 	vary = TRUE
 	sound = 'sound/mobs/non-humanoids/pony/snort.ogg'
-/mob/living/basic/horse/Initialize(mapload)
+/mob/living/basic/horse/Initialize(mapload, datum/stored_horse/from_storage = null)
 	. = ..()
-	name = pick_horse_name()
-	gender = pick(MALE, FEMALE)
-	if(!breed)
-		var/breed_type = get_random_horse_breed()
-		breed = get_breed_datum(breed_type)
-	temperament = rand(breed.min_temperament, breed.max_temperament)
-	intelligence = rand(breed.min_intelligence, breed.max_intelligence)
-	sspeed = rand(breed.min_speed, breed.max_speed)
-	set_random_color_variant()
+	if(from_storage)
+		apply_stored_data(from_storage)
+	else
+		if(!was_born && !age)
+			age = rand(HORSE_WILD_AGE_MIN, HORSE_WILD_AGE_MAX)
+		name = pick_horse_name()
+		gender = pick(MALE, FEMALE)
+		if(!breed)
+			var/breed_type = get_random_horse_breed()
+			breed = get_breed_datum(breed_type)
+		temperament = rand(breed.min_temperament, breed.max_temperament)
+		intelligence = rand(breed.min_intelligence, breed.max_intelligence)
+		sspeed = rand(breed.min_speed, breed.max_speed)
+		set_random_color_variant()
 	AddElement(/datum/element/pet_bonus, "whinny")
 	AddElement(/datum/element/ai_retaliate)
 	AddElement(/datum/element/ai_flee_while_injured)
 	AddElementTrait(TRAIT_WADDLING, INNATE_TRAIT, /datum/element/waddling)
-	if(!family_tree)
-		family_tree = new /datum/horse_family_tree(null, null)
 	var/static/list/food_types = list(
 		/obj/item/food/grown/apple = 15,
 		/obj/item/food/grown/carrot = 15,
@@ -86,7 +97,43 @@
 	AddElement(/datum/element/ridable, /datum/component/riding/creature/pony)
 	RegisterSignal(src, COMSIG_MOB_ATE, PROC_REF(on_ate_food))
 	RegisterSignal(src, COMSIG_MOVABLE_PREBUCKLE, PROC_REF(on_prebuckle_taming))
+	RegisterSignal(src, COMSIG_LIVING_LIFE, PROC_REF(on_life))
 	generate_genetics()
+
+/mob/living/basic/horse/proc/apply_stored_data(datum/stored_horse/stored)
+	if(!stored)
+		return
+	name = stored.horse_name
+	gender = stored.horse_gender
+	if(stored.breed_type)
+		breed = get_breed_datum(stored.breed_type)
+	horse_color_variant = stored.horse_color_variant
+	icon_state = horse_color_variant
+	icon_living = horse_color_variant
+	icon_dead = "[horse_color_variant]_dead"
+	temperament = stored.temperament
+	intelligence = stored.intelligence
+	sspeed = stored.sspeed
+	age = stored.age
+	was_born = stored.was_born
+	last_aged_round = stored.last_aged_round
+	if(stored.supplement_counts)
+		supplement_counts = stored.supplement_counts.Copy()
+
+/mob/living/basic/horse/proc/get_age_description()
+	if(age < 5)
+		return "a young foal"
+	if(age < 10)
+		return "young"
+	if(age < 20)
+		return "in their prime"
+	if(age < HORSE_RETIREMENT_AGE)
+		return "getting on in years"
+	return "elderly"
+
+/mob/living/basic/horse/proc/can_be_used()
+	return !retired && age < HORSE_RETIREMENT_AGE
+
 /mob/living/basic/horse/proc/on_ate_food(mob/living/eater, atom/food, mob/living/feeder)
 	SIGNAL_HANDLER
 	handle_taming_food(food, feeder)
@@ -170,6 +217,7 @@
 	saddle.on_horse = TRUE
 	visible_message(span_notice("[user] places [saddle] on [src]."))
 	update_appearance(UPDATE_OVERLAYS)
+	send_holdie_sync()
 	return TRUE
 
 /mob/living/basic/horse/proc/equip_bridle(obj/item/horse_bridle/bridle, mob/living/user)
@@ -182,6 +230,7 @@
 	bridle.on_horse = TRUE
 	visible_message(span_notice("[user] places [bridle] on [src]."))
 	update_appearance(UPDATE_OVERLAYS)
+	send_holdie_sync()
 	return TRUE
 
 /mob/living/basic/horse/proc/equip_wraps(obj/item/horse_wraps/wraps, mob/living/user)
@@ -194,6 +243,7 @@
 	wraps.on_horse = TRUE
 	visible_message(span_notice("[user] places [wraps] on [src]."))
 	update_appearance(UPDATE_OVERLAYS)
+	send_holdie_sync()
 	return TRUE
 
 /mob/living/basic/horse/proc/unequip_item(equipment_type, mob/living/user)
@@ -228,6 +278,7 @@
 		else
 			return FALSE
 	update_appearance(UPDATE_OVERLAYS)
+	send_holdie_sync()
 	return TRUE
 
 /mob/living/basic/horse/update_overlays()
@@ -289,28 +340,36 @@
 	my_owner = WEAKREF(tamer)
 	to_chat(tamer, span_notice("[src] now recognizes you as [p_their()] owner!"))
 /mob/living/basic/horse/Destroy()
-	UnregisterSignal(src, list(COMSIG_MOVABLE_PREBUCKLE, COMSIG_MOB_ATE))
+	UnregisterSignal(src, list(COMSIG_MOVABLE_PREBUCKLE, COMSIG_MOB_ATE, COMSIG_LIVING_LIFE))
 	my_owner = null
 	sperm = null
 	eggs = null
 	return ..()
-/mob/living/basic/horse/proc/is_related_to(mob/living/basic/horse/other)
-	if(!istype(other))
-		return FALSE
-	if(!family_tree || !other.family_tree)
-		return FALSE // No family data, allow breeding
-	if(family_tree.is_ancestor(other))
-		return TRUE
-	if(other.family_tree.is_ancestor(src))
-		return TRUE
-	if(family_tree.shares_ancestry_with(other.family_tree, max_depth = 3))
-		return TRUE
-	return FALSE
+
+/mob/living/basic/horse/proc/on_life(datum/source, seconds_per_tick)
+	SIGNAL_HANDLER
+	if(!isturf(loc)) // Stabled or otherwise held, no kicking in there
+		return
+	if(temperament < 30)
+		return
+	var/bite_chance = ((temperament - 30) / (max_temperament - 30)) * 2 * seconds_per_tick
+	if(!prob(bite_chance))
+		return
+	for(var/mob/living/target in oview(1, src))
+		if(target == src || target.stat == DEAD)
+			continue
+		INVOKE_ASYNC(src, PROC_REF(do_bite), target)
+		break
+
+/mob/living/basic/horse/proc/do_bite(mob/living/target)
+	if(get_dist(src, target) > 1 || target.stat == DEAD || stat == DEAD)
+		return
+	manual_emote("kicks at [target]!")
+	playsound(src, attack_sound, 50)
+	target.apply_damage(rand(melee_damage_lower, melee_damage_upper), BRUTE)
+
 /mob/living/basic/horse/proc/mate_with(mob/living/basic/horse/partner)
 	if(!istype(partner))
-		return FALSE
-	if(is_related_to(partner))
-		visible_message(span_warning("[src] and [partner] are too closely related to breed!"))
 		return FALSE
 	var/mob/living/basic/horse/male_parent
 	var/mob/living/basic/horse/female_parent
@@ -347,6 +406,8 @@
 	var/datum/horse_genetics/sperm_data = fertilized_egg["sperm"]
 	var/datum/horse_genetics/egg_data = fertilized_egg["egg"]
 	var/mob/living/basic/horse/foal = new /mob/living/basic/horse/foal(loc)
+	foal.was_born = TRUE
+	foal.age = 0
 	var/mob/living/basic/horse/father_horse = fertilized_egg["father"]
 	var/mob/living/basic/horse/mother_horse = fertilized_egg["mother"]
 	if(father_horse?.breed && mother_horse?.breed)
@@ -377,11 +438,6 @@
 	foal.icon_state = foal.horse_color_variant
 	foal.icon_living = foal.horse_color_variant
 	foal.icon_dead = "[foal.horse_color_variant]_dead"
-	foal.family_tree = new /datum/horse_family_tree(father_horse, mother_horse)
-	if(father_horse?.family_tree)
-		father_horse.family_tree.add_child(foal)
-	if(mother_horse?.family_tree)
-		mother_horse.family_tree.add_child(foal)
 	foal.generate_genetics()
 	visible_message(span_boldnotice("[src] gives birth to a foal!"))
 	playsound(src, 'sound/mobs/non-humanoids/pony/whinny01.ogg', 60)
@@ -398,6 +454,8 @@
 	else
 		eggs = list()
 /mob/living/basic/horse/proc/can_mate()
+	if(!can_be_used())
+		return FALSE
 	if(stat != CONSCIOUS)
 		return FALSE
 	if(gender == FEMALE && length(eggs) > 0)
@@ -407,6 +465,9 @@
 	return TRUE
 /mob/living/basic/horse/examine(mob/user)
 	. = ..()
+	. += span_info("This [gender == MALE ? "stallion" : "mare"] is [age] years old and [get_age_description()].")
+	if(retired)
+		. += span_notice("[src] has retired from active duty.")
 	. += span_info("This [gender == MALE ? "stallion" : "mare"] appears to be [temperament < 30 ? "very calm" : temperament < 60 ? "moderately tempered" : "quite spirited"].")
 	. += span_info("It seems [intelligence < 30 ? "simple-minded" : intelligence < 60 ? "moderately intelligent" : "quite clever"].")
 	. += span_info("Its build suggests it would be [sspeed < 30 ? "slow but steady" : sspeed < 60 ? "moderately fast" : "very swift"].")
@@ -503,6 +564,9 @@
 	data["maxIntelligence"] = max_intelligence
 	data["speed"] = sspeed
 	data["maxSpeed"] = max_speed
+	data["age"] = age
+	data["retired"] = retired
+	data["maxAge"] = HORSE_RETIREMENT_AGE
 	data["pregnant"] = gender == FEMALE && length(eggs) > 0
 	data["canBreed"] = can_mate()
 	if(breed)
@@ -517,11 +581,8 @@
 	var/mob/living/owner = my_owner?.resolve()
 	data["owner"] = owner ? (owner.real_name || owner.name) : null
 	data["isOwner"] = owner == user
-	if(family_tree)
-		data["familyTree"] = family_tree.get_family_data(depth = 0, max_depth = 10)
-	else
-		data["familyTree"] = null
 	return data
+
 /mob/living/basic/horse/ui_act(action, list/params)
 	. = ..()
 	if(.)
@@ -530,14 +591,17 @@
 		if("breed")
 			attempt_mate_command(usr)
 			return TRUE
+
 /mob/living/basic/horse/ui_static_data(mob/user)
 	var/list/data = list()
 	data["horseType"] = initial(name)
 	return data
+
 /mob/living/basic/horse/ui_status(mob/user, datum/ui_state/state)
 	if(get_dist(src, user) > 1)
 		return UI_CLOSE
 	return ..()
+
 /mob/living/basic/horse/proc/attempt_mate_command(mob/user)
 	if(!can_mate())
 		to_chat(user, span_warning("[src] is not ready to mate right now."))
@@ -553,6 +617,7 @@
 	var/mob/living/basic/horse/chosen_mate = input(user, "Choose a mate for [src]:", "Horse Breeding") as null|anything in potential_mates
 	if(chosen_mate)
 		mate_with(chosen_mate)
+
 /mob/living/basic/horse/proc/set_random_color_variant()
 	// List of all available horse color variants (excluding syndicate)
 	var/static/list/color_variants = list(
@@ -565,6 +630,7 @@
 	icon_state = horse_color_variant
 	icon_living = horse_color_variant
 	icon_dead = "[horse_color_variant]_dead"
+
 /mob/living/basic/horse/proc/whinny_angrily()
 	manual_emote("whinnies ANGRILY!")
 	playsound(src, pick(list(
@@ -572,15 +638,18 @@
 		'sound/mobs/non-humanoids/pony/whinny02.ogg',
 		'sound/mobs/non-humanoids/pony/whinny03.ogg'
 	)), 60)
+
 /mob/living/basic/horse/take_damage(damage_amount, damage_type, damage_flag, sound_effect, attack_dir, armour_penetration)
 	. = ..()
 	if (prob(33))
 		whinny_angrily()
+
 /mob/living/basic/horse/melee_attack(atom/target, list/modifiers, ignore_cooldown = FALSE)
 	. = ..()
 	if (!.)
 		return
 	whinny_angrily()
+
 /datum/ai_controller/basic_controller/horse
 	blackboard = list(
 		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic,
@@ -595,26 +664,31 @@
 		/datum/ai_planning_subtree/basic_melee_attack_subtree,
 		/datum/ai_planning_subtree/random_speech/pony,
 	)
+
 /mob/living/basic/horse/proc/pick_horse_name()
 	var/static/list/horse_names
 	if(!horse_names)
 		horse_names = world.file2list("strings/horse_names.txt")
 	return pick(horse_names)
+
 /datum/horse_genetics
 	var/temperament
 	var/intelligence
 	var/sspeed
+
 /datum/horse_genetics/New(mob/living/basic/horse/parent)
 	if(parent)
 		temperament = parent.temperament
 		intelligence = parent.intelligence
 		sspeed = parent.sspeed
+
 /datum/horse_genetics/proc/copy()
 	var/datum/horse_genetics/new_genetics = new()
 	new_genetics.temperament = temperament
 	new_genetics.intelligence = intelligence
 	new_genetics.sspeed = sspeed
 	return new_genetics
+
 /datum/horse_genetics/proc/mutate()
 	if(prob(10))
 		temperament += rand(-3, 3)
@@ -622,120 +696,7 @@
 		intelligence += rand(-2, 2)
 	if(prob(10))
 		sspeed += rand(-3, 3)
-/datum/horse_family_tree
-	var/datum/weakref/father
-	var/datum/weakref/mother
-	var/datum/horse_family_tree/father_tree
-	var/datum/horse_family_tree/mother_tree
-	var/list/datum/weakref/children = list()
-	var/birth_time
-	var/cached_name
-/datum/horse_family_tree/New(mob/living/basic/horse/father_horse, mob/living/basic/horse/mother_horse)
-	if(father_horse)
-		father = WEAKREF(father_horse)
-		if(father_horse.family_tree)
-			father_tree = father_horse.family_tree
-	if(mother_horse)
-		mother = WEAKREF(mother_horse)
-		if(mother_horse.family_tree)
-			mother_tree = mother_horse.family_tree
-	birth_time = world.time
-/datum/horse_family_tree/proc/get_father()
-	return father?.resolve()
-/datum/horse_family_tree/proc/get_mother()
-	return mother?.resolve()
-/datum/horse_family_tree/proc/add_child(mob/living/basic/horse/child_horse)
-	if(!child_horse)
-		return
-	children += WEAKREF(child_horse)
-/datum/horse_family_tree/proc/get_children()
-	var/list/living_children = list()
-	for(var/datum/weakref/child_ref in children)
-		var/mob/living/basic/horse/child = child_ref.resolve()
-		if(child)
-			living_children += child
-	return living_children
-/datum/horse_family_tree/proc/is_ancestor(mob/living/basic/horse/check_horse)
-	if(!check_horse)
-		return FALSE
-	var/mob/living/basic/horse/dad = get_father()
-	if(dad == check_horse)
-		return TRUE
-	var/mob/living/basic/horse/mom = get_mother()
-	if(mom == check_horse)
-		return TRUE
-	if(father_tree?.is_ancestor(check_horse))
-		return TRUE
-	if(mother_tree?.is_ancestor(check_horse))
-		return TRUE
-	return FALSE
-/datum/horse_family_tree/proc/shares_ancestry_with(datum/horse_family_tree/other_tree, max_depth = 3)
-	if(!other_tree)
-		return FALSE
-	return check_common_ancestor(src, other_tree, 0, max_depth)
-/datum/horse_family_tree/proc/check_common_ancestor(datum/horse_family_tree/tree1, datum/horse_family_tree/tree2, depth, max_depth)
-	if(!tree1 || !tree2 || depth > max_depth)
-		return FALSE
-	var/mob/living/basic/horse/dad1 = tree1.get_father()
-	var/mob/living/basic/horse/dad2 = tree2.get_father()
-	if(dad1 && dad2 && dad1 == dad2)
-		return TRUE
-	var/mob/living/basic/horse/mom1 = tree1.get_mother()
-	var/mob/living/basic/horse/mom2 = tree2.get_mother()
-	if(mom1 && mom2 && mom1 == mom2)
-		return TRUE
-	if(tree1.father_tree && check_common_ancestor(tree1.father_tree, tree2, depth + 1, max_depth))
-		return TRUE
-	if(tree1.mother_tree && check_common_ancestor(tree1.mother_tree, tree2, depth + 1, max_depth))
-		return TRUE
-	if(tree2.father_tree && check_common_ancestor(tree1, tree2.father_tree, depth + 1, max_depth))
-		return TRUE
-	if(tree2.mother_tree && check_common_ancestor(tree1, tree2.mother_tree, depth + 1, max_depth))
-		return TRUE
-	return FALSE
-/datum/horse_family_tree/proc/get_family_data(depth = 0, max_depth = 10)
-	if(depth > max_depth)
-		return null
-	var/list/data = list()
-	var/mob/living/basic/horse/dad = get_father()
-	var/mob/living/basic/horse/mom = get_mother()
-	data["fatherName"] = dad?.name || cached_name || "Unknown"
-	data["motherName"] = mom?.name || cached_name || "Unknown"
-	data["fatherAlive"] = dad ? TRUE : FALSE
-	data["motherAlive"] = mom ? TRUE : FALSE
-	data["depth"] = depth
-	if(dad)
-		data["fatherStats"] = list(
-			"temperament" = dad.temperament,
-			"intelligence" = dad.intelligence,
-			"speed" = dad.sspeed
-		)
-	if(mom)
-		data["motherStats"] = list(
-			"temperament" = mom.temperament,
-			"intelligence" = mom.intelligence,
-			"speed" = mom.sspeed
-		)
-	var/list/children_data = list()
-	for(var/datum/weakref/child_ref in children)
-		var/mob/living/basic/horse/child = child_ref.resolve()
-		if(child)
-			children_data += list(list(
-				"name" = child.name,
-				"alive" = TRUE,
-				"gender" = child.gender == MALE ? "male" : "female",
-				"stats" = list(
-					"temperament" = child.temperament,
-					"intelligence" = child.intelligence,
-					"speed" = child.sspeed
-				)
-			))
-	data["children"] = children_data
-	if(father_tree)
-		data["fatherTree"] = father_tree.get_family_data(depth + 1, max_depth)
-	if(mother_tree)
-		data["motherTree"] = mother_tree.get_family_data(depth + 1, max_depth)
-	return data
+
 /mob/living/basic/horse/foal
 	name = "foal"
 	desc = "A young horse. Still growing and learning."
@@ -744,9 +705,15 @@
 	melee_damage_lower = 3
 	melee_damage_upper = 6
 	tamed_points = 100 // Easier to tame when young
-/mob/living/basic/horse/foal/Initialize(mapload)
+
+/mob/living/basic/horse/foal/Initialize(mapload, datum/stored_horse/from_storage = null)
+	was_born = TRUE
+	if(!from_storage)
+		age = 0
 	. = ..()
-	addtimer(CALLBACK(src, PROC_REF(grow_up)), 10 MINUTES)
+	if(!from_storage)
+		addtimer(CALLBACK(src, PROC_REF(grow_up)), 10 MINUTES)
+
 /mob/living/basic/horse/foal/proc/grow_up()
 	visible_message(span_notice("[src] has grown into an adult horse!"))
 	var/mob/living/basic/horse/adult = new /mob/living/basic/horse(loc)
@@ -762,7 +729,9 @@
 	adult.tamed_points = tamed_points
 	adult.my_owner = my_owner
 	adult.name = name // Preserve the foal's name
-	adult.family_tree = family_tree
+	adult.age = age
+	adult.was_born = was_born
+	adult.last_aged_round = last_aged_round
 	if(my_owner)
 		adult.unique_tamer = unique_tamer
 	adult.generate_genetics()
