@@ -17,3 +17,12 @@
 	icon = 'modular_horsetest/modules/power/horsematter/icons/horsematter.dmi'
 	base_icon_state = "hm"
 	icon_state = "hm"
+
+// We don't have dedicated shard sprites yet, so shards use the full horsematter states.
+/obj/machinery/power/supermatter_crystal/shard
+	base_icon_state = "hm"
+	icon_state = "hm"
+
+// No horsematter version of the small crystal yet, so keep tg's sprite.
+/obj/machinery/power/supermatter_crystal/small
+	icon = 'icons/obj/machines/engine/supermatter.dmi'
