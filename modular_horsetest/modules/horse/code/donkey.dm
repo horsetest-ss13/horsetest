@@ -18,7 +18,7 @@
 	icon = 'modular_horsetest/modules/horse/icons/horse.dmi'
 	icon_state = "donkey"
 	icon_living = "donkey"
-	icon_dead = "donkey_dead"
+	icon_dead = "pony_dead"
 	horse_color_variant = "donkey"
 	speak_emote = list("brays")
 
@@ -30,7 +30,15 @@
 	horse_color_variant = "donkey"
 	icon_state = horse_color_variant
 	icon_living = horse_color_variant
-	icon_dead = "[horse_color_variant]_dead"
+	icon_dead = "pony_dead"
+
+/mob/living/basic/horse/donkey/look_dead()
+	icon = 'icons/mob/simple/animal.dmi'
+	return ..()
+
+/mob/living/basic/horse/donkey/look_alive()
+	icon = initial(icon)
+	return ..()
 
 /datum/emote/horse/bray
 	key = "bray"
