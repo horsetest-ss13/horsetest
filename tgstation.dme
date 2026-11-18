@@ -1384,6 +1384,7 @@
 #include "code\datums\components\hitsplat.dm"
 #include "code\datums\components\holderloving.dm"
 #include "code\datums\components\holographic_nature.dm"
+#include "code\datums\components\horse_jumpable.dm"
 #include "code\datums\components\houlihan_teleport.dm"
 #include "code\datums\components\igniter.dm"
 #include "code\datums\components\infective.dm"

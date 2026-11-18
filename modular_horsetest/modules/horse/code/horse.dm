@@ -1,6 +1,7 @@
 #define HORSE_RETIREMENT_AGE 30
 #define HORSE_WILD_AGE_MIN 10
 #define HORSE_WILD_AGE_MAX 15
+#define ANIM_TAG_LEAP "leap"
 
 /mob/living/basic/horse
 	name = "horse"
@@ -44,6 +45,8 @@
 	var/max_intelligence = 100
 	var/sspeed = 30
 	var/max_speed = 100
+	var/strength = 30
+	var/max_strength = 100
 	var/tamed_points = 150
 	var/age = 0
 	var/was_born = FALSE
@@ -86,7 +89,7 @@
 	AddElement(/datum/element/pet_bonus, "whinny")
 	AddElement(/datum/element/ai_retaliate)
 	AddElement(/datum/element/ai_flee_while_injured)
-	AddElementTrait(TRAIT_WADDLING, INNATE_TRAIT, /datum/element/waddling)
+	//AddElementTrait(TRAIT_WADDLING, INNATE_TRAIT, /datum/element/waddling)
 	var/static/list/food_types = list(
 		/obj/item/food/grown/apple = 15,
 		/obj/item/food/grown/carrotlike/carrot = 15,
@@ -559,6 +562,8 @@
 	data["maxIntelligence"] = max_intelligence
 	data["speed"] = sspeed
 	data["maxSpeed"] = max_speed
+	data["strength"] = strength
+	data["maxStrength"] = max_strength
 	data["age"] = age
 	data["retired"] = retired
 	data["maxAge"] = HORSE_RETIREMENT_AGE
@@ -571,7 +576,8 @@
 			"rarity" = breed.rarity,
 			"idealTemperament" = breed.ideal_temperament,
 			"idealIntelligence" = breed.ideal_intelligence,
-			"idealSpeed" = breed.ideal_speed
+			"idealSpeed" = breed.ideal_speed,
+			"idealStrength" = breed.ideal_strength
 		)
 	var/mob/living/owner = my_owner?.resolve()
 	data["owner"] = owner ? (owner.real_name || owner.name) : null
@@ -634,6 +640,15 @@
 		'sound/mobs/non-humanoids/pony/whinny03.ogg'
 	)), 60)
 
+/mob/living/basic/horse/proc/leap(height = 12 /* How high, sir? */ )
+	animate(src, flags = ANIMATION_END_NOW, tag = ANIM_TAG_LEAP)
+	animate(src, pixel_y = height, time = 0.21 SECONDS, flags = ANIMATION_RELATIVE, easing = CUBIC_EASING|EASE_OUT, tag = ANIM_TAG_LEAP)
+	animate(pixel_y = -height, time = 0.21 SECONDS, flags = ANIMATION_RELATIVE, easing = CUBIC_EASING|EASE_IN)
+	for(var/mob/living/rider in src.buckled_mobs)
+		animate(rider, flags = ANIMATION_END_NOW, tag = ANIM_TAG_LEAP)
+		animate(rider, pixel_y = height, time = 0.21 SECONDS, flags = ANIMATION_RELATIVE, easing = CUBIC_EASING|EASE_OUT, tag = ANIM_TAG_LEAP)
+		animate(pixel_y = -height, time = 0.21 SECONDS, flags = ANIMATION_RELATIVE, easing = CUBIC_EASING|EASE_IN)
+
 /mob/living/basic/horse/take_damage(damage_amount, damage_type, damage_flag, sound_effect, attack_dir, armour_penetration)
 	. = ..()
 	if (prob(35))
@@ -671,18 +686,21 @@
 	var/temperament
 	var/intelligence
 	var/sspeed
+	var/strength
 
 /datum/horse_genetics/New(mob/living/basic/horse/parent)
 	if(parent)
 		temperament = parent.temperament
 		intelligence = parent.intelligence
 		sspeed = parent.sspeed
+		strength = parent.strength
 
 /datum/horse_genetics/proc/copy()
 	var/datum/horse_genetics/new_genetics = new()
 	new_genetics.temperament = temperament
 	new_genetics.intelligence = intelligence
 	new_genetics.sspeed = sspeed
+	new_genetics.strength = strength
 	return new_genetics
 
 /datum/horse_genetics/proc/mutate()
@@ -692,6 +710,8 @@
 		intelligence += rand(-2, 2)
 	if(prob(10))
 		sspeed += rand(-3, 3)
+	if(prob(10))
+		strength += rand(-3, 3)
 
 /mob/living/basic/horse/foal
 	name = "foal"

@@ -17,6 +17,7 @@ type BreedInfo = {
   idealTemperament: number;
   idealIntelligence: number;
   idealSpeed: number;
+  idealStrength: number;
 };
 
 type HorseData = {
@@ -54,6 +55,8 @@ export const HorseMenu = () => {
     maxIntelligence,
     speed,
     maxSpeed,
+    strength,
+    maxStrength,
     age,
     retired,
     maxAge,
@@ -80,6 +83,12 @@ export const HorseMenu = () => {
     if (value < 30) return 'Slow';
     if (value < 60) return 'Moderate';
     return 'Fast';
+  };
+
+  const getStrengthLabel = (value: number) => {
+    if (value < 30) return 'Weak';
+    if (value < 60) return 'Average';
+    return 'Strong';
   };
 
   return (
@@ -220,6 +229,30 @@ export const HorseMenu = () => {
                       }
                     >
                       Breed Ideal: {breed.idealSpeed}
+                    </Box>
+                  )}
+                </LabeledList.Item>
+                <LabeledList.Item label="Strength">
+                  <ProgressBar
+                    value={strength}
+                    minValue={0}
+                    maxValue={maxStrength}
+                    color="red"
+                  >
+                    {strength} / {maxStrength} ({getStrengthLabel(strength)})
+                  </ProgressBar>
+                  {breed && (
+                    <Box
+                      fontSize="11px"
+                      color={
+                        Math.abs(strength - breed.idealStrength) < 10
+                          ? 'good'
+                          : Math.abs(strength - breed.idealStrength) < 20
+                            ? 'average'
+                            : 'bad'
+                      }
+                    >
+                      Breeed Ideal: {breed.idealStrength}
                     </Box>
                   )}
                 </LabeledList.Item>
