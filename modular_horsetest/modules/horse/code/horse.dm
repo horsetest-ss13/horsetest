@@ -753,3 +753,8 @@
 	adult.generate_genetics()
 	adult.forceMove(loc)
 	qdel(src)
+
+#undef HORSE_RETIREMENT_AGE
+#undef HORSE_WILD_AGE_MIN
+#undef HORSE_WILD_AGE_MAX
+#undef ANIM_TAG_LEAP

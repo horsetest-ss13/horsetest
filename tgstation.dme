@@ -7249,6 +7249,8 @@
 #include "modular_horsetest\modules\dungeons\code\dungeon_mobs.dm"
 #include "modular_horsetest\modules\dungeons\code\dungeon_portal.dm"
 #include "modular_horsetest\modules\dungeons\code\room_generator.dm"
+#include "modular_horsetest\modules\guns\code\boltactionrifles.dm"
+#include "modular_horsetest\modules\guns\code\pumpactionshotguns.dm"
 #include "modular_horsetest\modules\horse\code\breeds.dm"
 #include "modular_horsetest\modules\horse\code\cargo.dm"
 #include "modular_horsetest\modules\horse\code\competition_board.dm"
@@ -7260,6 +7262,4 @@
 #include "modular_horsetest\modules\horse\code\jumps.dm"
 #include "modular_horsetest\modules\power\horsematter\code\horsematter.dm"
 #include "modular_horsetest\modules\revolvers\code\revolvers.dm"
-#include "modular_horsetest\modules\guns\code\boltactionrifles.dm"
-#include "modular_horsetest\modules\guns\code\pumpactionshotguns.dm"
 // END_INCLUDE

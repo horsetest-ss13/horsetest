@@ -19,6 +19,7 @@ mkdir -p \
     $1/sound/runtime \
     $1/strings \
     $1/tgui/public \
+    $1/modular_horsetest \
 
 if [ -d ".git" ]; then
   mkdir -p $1/.git/logs
@@ -34,6 +35,7 @@ cp -r icons/* $1/icons/
 cp -r sound/runtime/* $1/sound/runtime/
 cp -r strings/* $1/strings/
 cp -r tgui/public/* $1/tgui/public/
+cp -r modular_horsetest/* $1/modular_horsetest/
 
 #remove .dm files from _maps
 

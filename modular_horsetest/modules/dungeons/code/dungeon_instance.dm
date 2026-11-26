@@ -313,3 +313,9 @@ GLOBAL_LIST_EMPTY(active_dungeons)
 	linked_dungeon = null
 	return_destination = null
 	return ..()
+
+#undef DUNGEON_STATE_IDLE
+#undef DUNGEON_STATE_GENERATING
+#undef DUNGEON_STATE_ACTIVE
+#undef DUNGEON_STATE_COMPLETED
+#undef DUNGEON_STATE_FAILED

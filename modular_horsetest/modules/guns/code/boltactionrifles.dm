@@ -8,6 +8,14 @@
 
 	SET_BASE_PIXEL(-8, 0)
 
+	// All of this is temp so that we can get passing tests
+
+	// I wonder if this will actually work
+	icon_state = null
+
+	//worn_icon = null //update when new custom icon is created for these items
+	worn_icon_state = "riotshotgun"
+
 /obj/item/gun/ballistic/rifle/boltaction/horsetest/update_icon_state()
 	. = ..()
 	icon_state = "[base_icon_state]_[bolt_locked ? "open" : "closed"]"
@@ -50,6 +58,7 @@
 	. = ..()
 	AddComponent(/datum/component/scope, range_modifier = 1.5)
 
+// This will require a back slot icon state created for the icons/mob/clothing/back.dmi file. Will need to determine how to modularize it.
 /obj/item/gun/ballistic/rifle/boltaction/horsetest/sawedoff
 	name = "\improper Sawn-Off Double Barrel"
 	desc = "A break-action double-barreled shotgun cut down to pocket size. Devastating up close, useless at range."
@@ -65,3 +74,5 @@
 	pb_knockback = 3
 
 	SET_BASE_PIXEL(0, 0)
+
+	worn_icon_state = "clshotgun"

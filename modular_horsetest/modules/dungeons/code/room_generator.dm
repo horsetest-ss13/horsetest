@@ -343,3 +343,10 @@
 			if(tile == ROOM_TILE_FLOOR || tile == ROOM_TILE_CORRIDOR)
 				positions += list(list(x, y))
 	return positions
+
+#undef ROOM_TILE_WALL
+#undef ROOM_TILE_FLOOR
+#undef ROOM_TILE_CORRIDOR
+#undef ROOM_TILE_DOOR
+#undef ROOM_TILE_ENTRANCE
+#undef ROOM_TILE_EXIT

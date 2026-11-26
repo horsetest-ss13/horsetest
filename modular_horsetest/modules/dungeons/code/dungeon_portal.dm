@@ -1,3 +1,9 @@
+#define DUNGEON_STATE_IDLE "idle"
+#define DUNGEON_STATE_GENERATING "generating"
+#define DUNGEON_STATE_ACTIVE "active"
+#define DUNGEON_STATE_COMPLETED "completed"
+#define DUNGEON_STATE_FAILED "failed"
+
 /obj/machinery/dungeon_portal
 	name = "dungeon portal"
 	desc = "A mysterious portal leading to procedurally generated dungeons. Who knows what treasures await within?"
@@ -122,3 +128,9 @@
 	dungeon_difficulty = 10
 	dungeon_width = 40
 	dungeon_height = 40
+
+#undef DUNGEON_STATE_IDLE
+#undef DUNGEON_STATE_GENERATING
+#undef DUNGEON_STATE_ACTIVE
+#undef DUNGEON_STATE_COMPLETED
+#undef DUNGEON_STATE_FAILED
