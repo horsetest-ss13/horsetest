@@ -1158,6 +1158,7 @@
 #include "code\datums\ai\generic_decorators\is_grabbing_target.dm"
 #include "code\datums\ai\generic_decorators\is_holding_target.dm"
 #include "code\datums\ai\generic_decorators\is_in_vent.dm"
+#include "code\datums\ai\generic_decorators\is_target_knocked_down.dm"
 #include "code\datums\ai\generic_decorators\is_target_stunned.dm"
 #include "code\datums\ai\generic_decorators\item_inside_pawn.dm"
 #include "code\datums\ai\generic_decorators\key_in_typelist.dm"

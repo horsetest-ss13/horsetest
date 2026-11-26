@@ -85,7 +85,6 @@
 		set_random_color_variant()
 	AddElement(/datum/element/pet_bonus, "whinny")
 	AddElement(/datum/element/ai_retaliate)
-	AddElement(/datum/element/ai_flee_while_injured)
 	AddElementTrait(TRAIT_WADDLING, INNATE_TRAIT, /datum/element/waddling)
 	var/static/list/food_types = list(
 		/obj/item/food/grown/apple = 15,
@@ -97,8 +96,8 @@
 	AddElement(/datum/element/ridable, /datum/component/riding/creature/pony)
 	RegisterSignal(src, COMSIG_MOB_ATE, PROC_REF(on_ate_food))
 	RegisterSignal(src, COMSIG_MOVABLE_PREBUCKLE, PROC_REF(on_prebuckle_taming))
-	RegisterSignal(src, COMSIG_LIVING_LIFE, PROC_REF(on_life))
 	generate_genetics()
+	update_kick_chance()
 
 /mob/living/basic/horse/proc/apply_stored_data(datum/stored_horse/stored)
 	if(!stored)
@@ -187,6 +186,7 @@
 			temperament = clamp(temperament - supplement.boost_amount, 0, 100)
 			new_value = temperament
 			stat_changed = (old_value != new_value)
+			update_kick_chance()
 	supplement_counts[supplement_type] = current_count + 1
 	if(stat_changed)
 		visible_message(span_notice("[src] seems to respond well to the [supplement.name]!"))
@@ -335,33 +335,11 @@
 	my_owner = WEAKREF(tamer)
 	to_chat(tamer, span_notice("[src] now recognizes you as [p_their()] owner!"))
 /mob/living/basic/horse/Destroy()
-	UnregisterSignal(src, list(COMSIG_MOVABLE_PREBUCKLE, COMSIG_MOB_ATE, COMSIG_LIVING_LIFE))
+	UnregisterSignal(src, list(COMSIG_MOVABLE_PREBUCKLE, COMSIG_MOB_ATE))
 	my_owner = null
 	sperm = null
 	eggs = null
 	return ..()
-
-/mob/living/basic/horse/proc/on_life(datum/source, seconds_per_tick)
-	SIGNAL_HANDLER
-	if(!isturf(loc)) // Stabled or otherwise held, no kicking in there
-		return
-	if(temperament < 30)
-		return
-	var/bite_chance = ((temperament - 30) / (max_temperament - 30)) * 2 * seconds_per_tick
-	if(!prob(bite_chance))
-		return
-	for(var/mob/living/target in oview(1, src))
-		if(target == src || target.stat == DEAD)
-			continue
-		INVOKE_ASYNC(src, PROC_REF(do_bite), target)
-		break
-
-/mob/living/basic/horse/proc/do_bite(mob/living/target)
-	if(get_dist(src, target) > 1 || target.stat == DEAD || stat == DEAD)
-		return
-	manual_emote("kicks at [target]!")
-	playsound(src, attack_sound, 50)
-	target.apply_damage(rand(melee_damage_lower, melee_damage_upper), BRUTE)
 
 /mob/living/basic/horse/proc/mate_with(mob/living/basic/horse/partner)
 	if(!istype(partner))
@@ -434,6 +412,7 @@
 	foal.icon_living = foal.horse_color_variant
 	foal.icon_dead = "[foal.horse_color_variant]_dead"
 	foal.generate_genetics()
+	foal.update_kick_chance()
 	visible_message(span_boldnotice("[src] gives birth to a foal!"))
 	playsound(src, 'sound/mobs/non-humanoids/pony/whinny01.ogg', 60)
 	eggs = list()
@@ -644,22 +623,56 @@
 	if (!.)
 		return
 	whinny_angrily()
+	var/mob/living/mob_target = target
+	if (isnull(mob_target))
+		return
+	mob_target.apply_damage(rand(melee_damage_lower, melee_damage_upper), BRUTE)
+	mob_target.apply_damage(rand(15,25), STAMINA)
+	mob_target.Knockdown(1.2 SECONDS)
+
+/// BB key chance that horse kicks someone nearby.
+#define BB_HORSE_KICK_CHANCE "BB_HORSE_KICK_CHANCE"
+
+/// Horses at or below this temperament are placid enough to never kick.
+#define HORSE_KICK_TEMPERAMENT_FLOOR 30
 
 /datum/ai_controller/basic_controller/horse
 	behavior_tree_json = "modular_horsetest/modules/horse/code/horse.bt.json"
 	blackboard = list(
 		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic,
+		// Horses are FACTION_NEUTRAL. They mostly only attack people who hit them so we don't need this
+		BB_ALWAYS_IGNORE_FACTION = TRUE,
 	)
 	ai_traits = PASSIVE_AI_FLAGS
 	ai_movement = /datum/ai_movement/basic_avoidance
-	/*idle_behavior = /datum/idle_behavior/idle_random_walk
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/find_nearest_thing_which_attacked_me_to_flee,
-		/datum/ai_planning_subtree/flee_target,
-		/datum/ai_planning_subtree/target_retaliate,
-		/datum/ai_planning_subtree/basic_melee_attack_subtree,
-		/datum/ai_planning_subtree/random_speech/pony,
-	)*/
+
+/// Updates AI controller BB values for horse kick chance.
+/mob/living/basic/horse/proc/update_kick_chance()
+	if(isnull(ai_controller))
+		return
+	var/spirit = max(temperament - HORSE_KICK_TEMPERAMENT_FLOOR, 0)
+	var/spirit_range = max(max_temperament - HORSE_KICK_TEMPERAMENT_FLOOR, 1)
+	var/chance = (spirit / spirit_range)
+	ai_controller.set_blackboard_key(BB_HORSE_KICK_CHANCE, chance)
+
+/datum/bt_node/ai_behavior/horse_kick
+
+/datum/bt_node/ai_behavior/horse_kick/perform(seconds_per_tick, datum/ai_controller/controller)
+	var/mob/living/basic/horse/horse_pawn = controller.pawn
+	if(!istype(horse_pawn) || !isturf(horse_pawn.loc)) // Stabled or otherwise held, no kicking in there
+		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
+
+	var/list/victims = list()
+	for(var/mob/living/neighbour in oview(1, horse_pawn))
+		if(neighbour.stat == DEAD)
+			continue
+		victims += neighbour
+
+	if(!length(victims))
+		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
+
+	INVOKE_ASYNC(controller, TYPE_PROC_REF(/datum/ai_controller, ai_interact), pick(victims), TRUE)
+	return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_SUCCEEDED
 
 /mob/living/basic/horse/proc/pick_horse_name()
 	var/static/list/horse_names
@@ -731,5 +744,6 @@
 	if(my_owner)
 		adult.unique_tamer = unique_tamer
 	adult.generate_genetics()
+	adult.update_kick_chance()
 	adult.forceMove(loc)
 	qdel(src)
