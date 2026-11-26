@@ -22,20 +22,128 @@
 						"failure_policy": "BT_PARALLEL_FAILURE_CHILD_ONE",
 						"success_policy": "BT_PARALLEL_SUCCESS_CHILD_ONE",
 						"repeat_secondary": true,
+						"repeat_secondary_delay": "1 SECONDS",
 						"finish_on_primary": true,
 						"children": [
 							{
-								"type": "subtree",
-								"subtype": "/datum/bt_node/subtree/run_away_from_target"
+								"type": "selector",
+								"children": [
+									{
+										"type": "decorator",
+										"decorator": "/datum/bt_node/decorator/is_at_distance",
+										"vars": {
+											"observer_abort": "BT_ABORT_LOWER_PRIORITY",
+											"target_key": "BB_CURRENT_TARGET",
+											"min_distance": 10
+										},
+										"child": {
+											"type": "leaf",
+											"behavior": "/datum/bt_node/ai_behavior/set_bb_key",
+											"vars": {
+												"target_key": "BB_CURRENT_TARGET"
+											}
+										}
+									},
+									{
+										"type": "decorator",
+										"decorator": "/datum/bt_node/decorator/pawn_buckled_to_obj",
+										"vars": {
+											"observer_abort": "BT_ABORT_LOWER_PRIORITY"
+										},
+										"child": {
+											"type": "selector",
+											"children": [
+												{
+													"type": "decorator",
+													"decorator": "/datum/bt_node/decorator/buckle_target_dangerous",
+													"child": {
+														"type": "leaf",
+														"behavior": "/datum/bt_node/ai_behavior/break_out_of_object/from_bb",
+														"vars": {
+															"target_key": "BB_BASIC_MOB_ESCAPE_TARGET"
+														}
+													}
+												},
+												{
+													"type": "leaf",
+													"behavior": "/datum/bt_node/ai_behavior/resist"
+												}
+											]
+										}
+									},
+									{
+										"type": "decorator",
+										"decorator": "/datum/bt_node/decorator/pawn_grabbed_by_enemy",
+										"vars": {
+											"observer_abort": "BT_ABORT_LOWER_PRIORITY"
+										},
+										"child": {
+											"type": "leaf",
+											"behavior": "/datum/bt_node/ai_behavior/resist"
+										}
+									},
+									{
+										"type": "decorator",
+										"decorator": "/datum/bt_node/decorator/pawn_is_restrained",
+										"vars": {
+											"observer_abort": "BT_ABORT_LOWER_PRIORITY"
+										},
+										"child": {
+											"type": "leaf",
+											"behavior": "/datum/bt_node/ai_behavior/resist"
+										}
+									},
+									{
+										"type": "decorator",
+										"decorator": "/datum/bt_node/decorator/is_at_distance",
+										"vars": {
+											"observer_abort": "BT_ABORT_BOTH",
+											"target_key": "BB_CURRENT_TARGET",
+											"maximum_distance": 1
+										},
+										"child": {
+											"type": "decorator",
+											"decorator": "/datum/bt_node/decorator/is_target_knocked_down",
+											"vars": {
+												"observer_abort": "BT_ABORT_BOTH",
+												"invert": true
+											},
+											"child": {
+												"type": "subplan",
+												"success_policy": "BT_SUBPLAN_SUCCEED_ON_SUCCESS",
+												"failure_policy": "BT_SUBPLAN_FAIL_ON_FAILURE",
+												"children": [
+													{
+														"type": "leaf",
+														"behavior": "/datum/bt_node/ai_behavior/basic_melee_attack",
+														"vars": {
+															"target_key": "BB_CURRENT_TARGET",
+															"targeting_strategy": "BB_TARGETING_STRATEGY",
+															"hiding_location_key": "BB_CURRENT_TARGET_HIDING_LOCATION"
+														}
+													}
+												]
+											}
+										}
+									},
+									{
+										"type": "subtree",
+										"subtype": "/datum/bt_node/subtree/run_away_from_target"
+									}
+								]
 							},
 							{
 								"type": "leaf",
 								"behavior": "/datum/bt_node/ai_behavior/random_speech",
 								"vars": {
-									"time_between_perform": "0.3 SECONDS",
-									"speech_chance": 100,
-									"emote_hear": "list(\"whinnies!\")",
-									"emote_see": "list(\"whinnies!\")"
+									"speech_chance": 8,
+									"emote_hear": "whinnies!",
+									"emote_see": ["rears wildly!", "shakes their head!"],
+									"sound": [
+										"'sound\\mobs\\non-humanoids\\pony\\whinny01.ogg'",
+										"'sound\\mobs\\non-humanoids\\pony\\whinny02.ogg'",
+										"'sound\\mobs\\non-humanoids\\pony\\whinny03.ogg'"
+									]
 								}
 							}
 						]
@@ -46,41 +154,51 @@
 					"failure_policy": "BT_PARALLEL_FAILURE_CHILD_ONE",
 					"success_policy": "BT_PARALLEL_SUCCESS_CHILD_ONE",
 					"repeat_secondary": true,
+					"repeat_secondary_delay": "IDLE_BEHAVIOR_RATE",
 					"finish_on_primary": true,
 					"children": [
-						{
-							"type": "subtree",
-							"subtype": "/datum/bt_node/subtree/random_walk"
-						},
 						{
 							"type": "leaf",
 							"behavior": "/datum/bt_node/ai_behavior/random_speech",
 							"vars": {
-								"speech_chance": 20,
-								"emote_hear": "list(\"snorts.\")",
-								"emote_see": "list(\"snorts.\")"
+								"speech_chance": 8,
+								"emote_hear": ["snorts.", "huffs."],
+								"emote_see": ["shakes their head.", "swishes their tail."],
+								"sound": "'sound/mobs/non-humanoids/pony/snort.ogg'"
 							}
+						},
+						{
+							"type": "subtree",
+							"subtype": "/datum/bt_node/subtree/random_walk"
 						}
 					]
 				}
 			]
 		},
 		{
-			"type": "selector",
+			"type": "leaf",
+			"behavior": "/datum/bt_node/ai_behavior/acquire_target/target_from_retaliate_list/nearest",
+			"vars": {
+				"target_key": "BB_CURRENT_TARGET",
+				"targeting_strategy": "BB_TARGETING_STRATEGY",
+				"hiding_location_key": "BB_CURRENT_TARGET_HIDING_LOCATION"
+			}
+		},
+		{
+			"type": "subplan",
+			"success_policy": "BT_SUBPLAN_LOOP_ON_SUCCESS",
+			"failure_policy": "BT_SUBPLAN_LOOP_ON_FAILURE",
+			"loop_delay": "1 SECONDS",
 			"children": [
 				{
-					"type": "leaf",
-					"behavior": "/datum/bt_node/ai_behavior/acquire_target/update_combat_targets",
+					"type": "decorator",
+					"decorator": "/datum/bt_node/decorator/random_chance_from_key",
 					"vars": {
-						"target_key": "BB_CURRENT_TARGET",
-						"hiding_location_key": "BB_HIDING_LOCATION"
-					}
-				},
-				{
-					"type": "leaf",
-					"behavior": "/datum/bt_node/ai_behavior/acquire_target/target_from_retaliate_list",
-					"vars": {
-						"target_key": "BB_CURRENT_TARGET"
+						"chance_key": "BB_HORSE_KICK_CHANCE"
+					},
+					"child": {
+						"type": "leaf",
+						"behavior": "/datum/bt_node/ai_behavior/horse_kick"
 					}
 				}
 			]
