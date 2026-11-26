@@ -19,6 +19,7 @@
 	var/ideal_temperament = 30  // Lower is calmer
 	var/ideal_intelligence = 50
 	var/ideal_speed = 50
+	var/ideal_strength = 50
 	var/rarity = 5
 
 

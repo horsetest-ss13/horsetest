@@ -1,0 +1,6 @@
+author: "UwUMacaroniTime"
+delete-after: True
+changes:
+  - rscadd: "Horses now have a strength value."
+  - bugfix: "horse jumps can now be unanchored, moved, and rotated."
+  - code_imp: "moved horse jump functionality to a component."
